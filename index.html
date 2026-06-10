@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PokéGO Tracker - Premium Personal Trainer Companion</title>
+  <meta name="description" content="Track your Pokémon GO collection, items, medals, levels, and generate advanced search strings. Optimize your inventory storage.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-section">
+        <div class="logo-icon">G</div>
+        <div class="logo-title">PokéGO Tracker</div>
+      </div>
+      
+      <nav class="nav-links">
+        <li class="nav-item active" id="nav-pokedex" onclick="switchTab('pokedex')">
+          <i class="fa-solid fa-list-ul"></i> Pokedex & Collection
+        </li>
+        <li class="nav-item" id="nav-levels" onclick="switchTab('levels')">
+          <i class="fa-solid fa-gauge-high"></i> Level & XP Tracker
+        </li>
+        <li class="nav-item" id="nav-medals" onclick="switchTab('medals')">
+          <i class="fa-solid fa-medal"></i> Medal Tracker
+        </li>
+        <li class="nav-item" id="nav-friends" onclick="switchTab('friends')">
+          <i class="fa-solid fa-user-group"></i> Friends & Lucky
+        </li>
+        <li class="nav-item" id="nav-storage" onclick="switchTab('storage')">
+          <i class="fa-solid fa-box-archive"></i> Storage Manager
+        </li>
+        <li class="nav-item" id="nav-search-string" onclick="switchTab('search-string')">
+          <i class="fa-solid fa-magnifying-glass-plus"></i> Search String Maker
+        </li>
+        <li class="nav-item" id="nav-events" onclick="switchTab('events')">
+          <i class="fa-solid fa-calendar-days"></i> Live Events & Raids
+        </li>
+      </nav>
+      
+      <div class="nav-footer">
+        <p>Trainer Level Cap: 80</p>
+        <p style="margin-top: 4px; font-size: 10px;">Data saved locally</p>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+      
+      <!-- Top 8 Widgets Dashboard -->
+      <section class="dashboard-grid">
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-owned);"><i class="fa-solid fa-circle-dot"></i></div>
+          <div class="widget-details">
+            <h4>Total Caught</h4>
+            <p id="stat-caught-count">0 / 0</p>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-shiny);"><i class="fa-solid fa-star"></i></div>
+          <div class="widget-details">
+            <h4>Shinies</h4>
+            <p id="stat-shiny-count">0</p>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-hundo);"><i class="fa-solid fa-ribbon"></i></div>
+          <div class="widget-details">
+            <h4>Perfect (100%)</h4>
+            <p id="stat-hundo-count">0</p>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-owned);"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="widget-details">
+            <h4>Shadows</h4>
+            <p id="stat-shadow-count">0</p>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-mega);"><i class="fa-solid fa-atom"></i></div>
+          <div class="widget-details">
+            <h4>Megas Unlocked</h4>
+            <p id="stat-mega-count">0</p>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-max);"><i class="fa-solid fa-bolt"></i></div>
+          <div class="widget-details">
+            <h4>Maxes Unlocked</h4>
+            <p id="stat-max-count">0</p>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-accent);"><i class="fa-solid fa-trophy"></i></div>
+          <div class="widget-details">
+            <h4>Platinum Medals</h4>
+            <p id="stat-medals-count">0</p>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-icon" style="color: var(--color-primary);"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="widget-details">
+            <h4>Trainer Level</h4>
+            <p id="stat-trainer-level">Level 1</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 1: Pokedex & Collection Tracker -->
+      <div class="tab-panel active" id="panel-pokedex">
+        <div class="section-header">
+          <h2 class="section-title">Pokedex & Collection</h2>
+          <p class="section-desc">Search and catalog your Pokémon GO collection. Mark Shinies, Shadows, Hundos, Megas, and Maxes directly on the cards.</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="pokedex-controls">
+          <div class="search-box-row">
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="poke-search-input" class="search-input" placeholder="Search by name, ID, or moves...">
+            </div>
+            <button id="btn-reset-filters" class="reset-filters-btn" onclick="resetAllFilters()">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+          </div>
+          
+          <div class="filter-grid">
+            <select id="filter-generation" class="filter-select" onchange="applyFilters()">
+              <option value="all">All Generations</option>
+              <option value="1">Generation 1 (Kanto)</option>
+              <option value="2">Generation 2 (Johto)</option>
+              <option value="3">Generation 3 (Hoenn)</option>
+              <option value="4">Generation 4 (Sinnoh)</option>
+              <option value="5">Generation 5 (Unova)</option>
+              <option value="6">Generation 6 (Kalos)</option>
+              <option value="7">Generation 7 (Alola)</option>
+              <option value="8">Generation 8 (Galar)</option>
+              <option value="9">Generation 9 (Paldea)</option>
+            </select>
+            
+            <select id="filter-type" class="filter-select" onchange="applyFilters()">
+              <option value="all">All Types</option>
+              <option value="Normal">Normal</option>
+              <option value="Fire">Fire</option>
+              <option value="Water">Water</option>
+              <option value="Electric">Electric</option>
+              <option value="Grass">Grass</option>
+              <option value="Ice">Ice</option>
+              <option value="Fighting">Fighting</option>
+              <option value="Poison">Poison</option>
+              <option value="Ground">Ground</option>
+              <option value="Flying">Flying</option>
+              <option value="Psychic">Psychic</option>
+              <option value="Bug">Bug</option>
+              <option value="Rock">Rock</option>
+              <option value="Ghost">Ghost</option>
+              <option value="Dragon">Dragon</option>
+              <option value="Steel">Steel</option>
+              <option value="Fairy">Fairy</option>
+              <option value="Dark">Dark</option>
+            </select>
+
+            <select id="filter-release" class="filter-select" onchange="applyFilters()">
+              <option value="all">All Release States</option>
+              <option value="released">Released in GO</option>
+              <option value="unreleased">Unreleased in GO</option>
+            </select>
+            
+            <select id="filter-exclusivity" class="filter-select" onchange="applyFilters()">
+              <option value="all">All Exclusivity</option>
+              <option value="mythical">Mythical (One per account)</option>
+              <option value="egg-only">Egg Only (Babies / hatches)</option>
+              <option value="item-evolve">Item / Quest Evolve</option>
+              <option value="background-released">Special Backgrounds</option>
+            </select>
+
+            <select id="filter-utility" class="filter-select" onchange="applyFilters()">
+              <option value="all">All Utility</option>
+              <option value="pvp-great">Great League Meta</option>
+              <option value="pvp-ultra">Ultra League Meta</option>
+              <option value="pvp-master">Master League Meta</option>
+              <option value="rocket">Team Rocket & Giovanni Counters</option>
+            </select>
+
+            <select id="filter-rank" class="filter-select" onchange="applyFilters()">
+              <option value="all">All Ranks</option>
+              <option value="S+">Rank S+</option>
+              <option value="S">Rank S</option>
+              <option value="A">Rank A</option>
+              <option value="B">Rank B</option>
+              <option value="C">Rank C</option>
+            </select>
+            
+            <select id="filter-status" class="filter-select" onchange="applyFilters()">
+              <option value="all">All Collection Status</option>
+              <option value="owned">Owned</option>
+              <option value="missing">Missing</option>
+              <option value="shiny">Shiny Owned</option>
+              <option value="lucky">Lucky Owned</option>
+              <option value="hundo">Hundo (100% IV) Owned</option>
+              <option value="shadow">Shadow Owned</option>
+              <option value="mega">Mega Form Unlocked</option>
+              <option value="max">Max Form Unlocked</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pokedex-grid" class="pokemon-grid">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 2: Level Tracker & Calculator -->
+      <div class="tab-panel" id="panel-levels">
+        <div class="section-header">
+          <h2 class="section-title">Level & XP Tracker</h2>
+          <p class="section-desc">Track your progress to Level 80, view tasks for high levels, and calculate when you'll reach your goals.</p>
+        </div>
+
+        <div class="level-layout-grid">
+          <!-- Column 1: Progress & Calculator -->
+          <div class="level-col-1">
+            <!-- Box 1: Level Progress -->
+            <div class="level-panel progress-box">
+              <h3 style="font-family: var(--font-title); font-size: 15px; margin-bottom: 14px;"><i class="fa-solid fa-chart-simple" style="color:var(--color-primary); margin-right: 6px;"></i>Level Progress</h3>
+              <div class="level-selector-row">
+                <label for="level-select">Set Current Level</label>
+                <select id="level-select" class="filter-select" onchange="onLevelChange()">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              
+              <div class="level-gauge-wrapper">
+                <div class="progress-ring">
+                  <svg width="140" height="140">
+                    <defs>
+                      <linearGradient id="levelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="var(--color-primary)" />
+                        <stop offset="100%" stop-color="var(--color-secondary)" />
+                      </linearGradient>
+                    </defs>
+                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                    <circle class="progress-ring-bar" id="level-progress-ring" cx="70" cy="70" r="60" />
+                  </svg>
+                  <div class="level-gauge-text">
+                    <span id="level-display-num" class="level-num-display">1</span>
+                    <div class="level-num-lbl">Level</div>
+                  </div>
+                </div>
+                <div id="level-xp-text" class="level-xp-progress-text">0 / 0 XP</div>
+              </div>
+            </div>
+
+            <!-- Box 2: XP Calculator -->
+            <div class="level-panel calc-box">
+              <h3 style="font-family: var(--font-title); font-size: 15px; margin-bottom: 14px;"><i class="fa-solid fa-calculator" style="color:var(--color-secondary); margin-right: 6px;"></i>XP Calculator</h3>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label for="input-current-xp">Current Total XP</label>
+                <input type="number" id="input-current-xp" class="form-input" oninput="calculateXPTimeframe()">
+              </div>
+              <div class="calc-row">
+                <div class="form-group">
+                  <label for="select-target-level">Target Level</label>
+                  <select id="select-target-level" class="filter-select" onchange="calculateXPTimeframe()">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="input-daily-xp">Avg Daily XP Gain</label>
+                  <input type="number" id="input-daily-xp" class="form-input" oninput="calculateXPTimeframe()">
+                </div>
+              </div>
+              
+              <div class="calc-output">
+                <div id="calc-result-days" class="calc-output-value">-- Days</div>
+                <div id="calc-result-desc" class="calc-output-desc">Enter your current XP to calculate.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Level Up Tasks -->
+          <div class="level-col-2">
+            <div class="level-panel tasks-box">
+              <h3 id="tasks-panel-title" style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;">Level Up Tasks</h3>
+              
+              <div id="level-tasks-container" class="task-list" style="margin-bottom:20px;">
+                <!-- Dynamic checklist -->
+              </div>
+              
+              <div class="info-alert">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>
+                  <strong>Leveling Update Note:</strong>
+                  Specific research tasks are now required <strong>only from Levels 71 through 80</strong>. Legacy requirements for levels 41-50 have been removed from the official game. Completing a task auto-completes the same tasks in all lower levels.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 3: Trainer Level Roadmap & Rewards -->
+          <div class="level-col-3">
+            <div class="level-panel rewards-box">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-gift" style="color:var(--color-accent); margin-right: 6px;"></i>Trainer Level Roadmap & Rewards (L71 - L80)</h3>
+              <p style="font-size:11px; color:var(--text-muted); margin-bottom:14px;">View the unlockable in-game rewards and exclusive cosmetics awaiting you at each major milestone level.</p>
+              
+              <div class="rewards-roadmap-list" id="level-rewards-roadmap">
+                <!-- Rendered dynamically in app.js -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Medal Tracker -->
+      <div class="tab-panel" id="panel-medals">
+        <div class="section-header">
+          <h2 class="section-title">Medal Tracker</h2>
+          <p class="section-desc">Track your achievements towards Platinum status. Click the hide button on a medal to remove it from view.</p>
+        </div>
+
+        <div class="show-hidden-medals-bar" id="hidden-medals-bar" style="display:none;">
+          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-eye-slash"></i> Some medals have been hidden from tracking.</span>
+          <button class="reset-filters-btn" style="padding:4px 8px; font-size:11px;" onclick="unhideAllMedals()">Show All Medals</button>
+        </div>
+        
+        <div class="pokedex-controls" style="margin-bottom: 24px; padding: 12px; display:flex; flex-wrap:wrap; gap:8px;">
+          <button id="btn-medal-filter-all" class="reset-filters-btn active" style="padding:6px 12px; background: rgba(191, 85, 236, 0.08); border-color: var(--color-primary);" onclick="filterMedals('all')">All Medals</button>
+          <button id="btn-medal-filter-region" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('region')">Region</button>
+          <button id="btn-medal-filter-type" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('type')">Types</button>
+          <button id="btn-medal-filter-gameplay" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('gameplay')">Gameplay</button>
+        </div>
+
+        <div id="medals-container" class="medals-grid">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 4: Friends & Lucky Tracker -->
+      <div class="tab-panel" id="panel-friends">
+        <div class="section-header">
+          <h2 class="section-title">Friends & Lucky Friends</h2>
+          <p class="section-desc">Manage trainer lists, check off daily interactions, track countdowns to Ultra/Best friends, and flag Lucky Friends.</p>
+        </div>
+
+        <div class="friends-layout">
+          <div class="friends-grid" id="friends-list-container">
+            <!-- Loaded dynamically -->
+          </div>
+
+          <div class="level-panel" style="align-self: flex-start;">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;">Add Friend</h3>
+            
+            <form id="add-friend-form" onsubmit="addNewFriend(event)" style="display:flex; flex-direction:column; gap:12px;">
+              <div class="form-group">
+                <label for="friend-name-input">Nickname</label>
+                <input type="text" id="friend-name-input" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="friend-code-input">Trainer Code (Optional)</label>
+                <input type="text" id="friend-code-input" class="form-input" placeholder="e.g. 1234 5678 9012">
+              </div>
+              <div class="form-group">
+                <label for="friend-level-select">Friendship Status</label>
+                <select id="friend-level-select" class="filter-select">
+                  <option value="good">Good Friend</option>
+                  <option value="great">Great Friend</option>
+                  <option value="ultra">Ultra Friend</option>
+                  <option value="best">Best Friend</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="friend-days-input">Days to Next Tier</label>
+                <input type="number" id="friend-days-input" class="form-input" value="7" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label for="friend-vivillon-select">Vivillon Region / Gift Pattern</label>
+                <select id="friend-vivillon-select" class="filter-select">
+                  <option value="none">Unknown / None</option>
+                  <option value="Archipelago">Archipelago 🦋</option>
+                  <option value="Continental">Continental 🦋</option>
+                  <option value="Elegant">Elegant 🦋</option>
+                  <option value="Garden">Garden 🦋</option>
+                  <option value="High Plains">High Plains 🦋</option>
+                  <option value="Icy Snow">Icy Snow 🦋</option>
+                  <option value="Jungle">Jungle 🦋</option>
+                  <option value="Marine">Marine 🦋</option>
+                  <option value="Meadow">Meadow 🦋</option>
+                  <option value="Modern">Modern 🦋</option>
+                  <option value="Monsoon">Monsoon 🦋</option>
+                  <option value="Ocean">Ocean 🦋</option>
+                  <option value="Polar">Polar 🦋</option>
+                  <option value="River">River 🦋</option>
+                  <option value="Sandstorm">Sandstorm 🦋</option>
+                  <option value="Savanna">Savanna 🦋</option>
+                  <option value="Sun">Sun 🦋</option>
+                  <option value="Tundra">Tundra 🦋</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary" id="btn-add-friend"><i class="fa-solid fa-user-plus"></i> Add Friend</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: Storage Manager -->
+      <div class="tab-panel" id="panel-storage">
+        <div class="section-header">
+          <h2 class="section-title">Storage Manager</h2>
+          <p class="section-desc">Manage both your Pokemon storage limits and Item Bag inventory. Get automated recommendations to optimize your bag space.</p>
+        </div>
+
+        <div class="storage-layout">
+          <!-- Column 1: Item Bag Storage (70% width on desktop) -->
+          <div class="storage-col-items">
+            <!-- Item Bag Inventory Gauge & Inputs -->
+            <div class="level-panel">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 12px;">Item Bag Storage</h3>
+              
+              <div class="form-group" style="margin-bottom:12px;">
+                <label for="input-item-cap">Max Item Capacity</label>
+                <input type="number" id="input-item-cap" class="form-input" value="500" min="50" max="8500" oninput="updateItemStorageProgress()">
+              </div>
+              
+              <div class="storage-bar-wrapper" style="margin-bottom: 20px;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span style="font-weight:600; color:var(--text-muted)">Item bag usage</span>
+                  <span id="item-percent-lbl" style="font-weight:700">0%</span>
+                </div>
+                <div class="storage-bar-outer">
+                  <div id="item-bar-fill" class="storage-bar-inner"></div>
+                </div>
+                <div id="item-cap-text" style="font-size:10px; text-align:right; color:var(--text-dim);">0 / 500 items used</div>
+              </div>
+
+              <!-- Item Inventory Inputs Grid -->
+              <div class="items-capacity-panel">
+                <h4 style="font-family: var(--font-title); font-size: 13px; margin-bottom: 8px; color:var(--color-primary);">Inventory Counts</h4>
+                <div class="item-storage-grid" id="item-inventory-grid">
+                  <!-- Generated dynamically in app.js -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Pokémon Storage & Suggestions (30% width on desktop) -->
+          <div class="storage-col-aside">
+            <!-- Pokémon Storage Gauge -->
+            <div class="level-panel">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 12px;">Pokémon Storage</h3>
+              
+              <div class="form-group" style="margin-bottom:8px;">
+                <label for="input-storage-cap">Max Storage Limit</label>
+                <input type="number" id="input-storage-cap" class="form-input" value="400" min="100" max="8500" oninput="updateStorageProgress()">
+              </div>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label for="input-storage-used">Current Pokemon Count</label>
+                <input type="number" id="input-storage-used" class="form-input" value="220" min="0" max="8500" oninput="updateStorageProgress()">
+              </div>
+
+              <div class="storage-bar-wrapper">
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span style="font-weight:600; color:var(--text-muted)">Space Utilization</span>
+                  <span id="storage-percent-lbl" style="font-weight:700">50%</span>
+                </div>
+                <div class="storage-bar-outer">
+                  <div id="storage-bar-fill" class="storage-bar-inner"></div>
+                </div>
+                <div id="storage-cap-text" style="font-size:10px; text-align:right; color:var(--text-dim);">0 / 0 spaces used</div>
+              </div>
+            </div>
+
+            <!-- Optimizer Cleanup Suggestions -->
+            <div class="level-panel">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;">Optimizer Cleanup Suggestions</h3>
+              <div id="storage-recommendations-list" class="storage-tips-grid">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: Search String Maker -->
+      <div class="tab-panel" id="panel-search-string">
+        <div class="section-header">
+          <h2 class="section-title">Search String Maker</h2>
+          <p class="section-desc">Generate advanced copy-paste filters to locate hundos, safe trash caught today, trade distances, or exclusive moves.</p>
+        </div>
+
+        <div class="search-string-layout">
+          
+          <!-- Quick Templates Card (Column 1) -->
+          <div class="level-panel">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 12px;">Quick Templates</h3>
+            <div class="templates-grid">
+              <button class="reset-filters-btn" onclick="loadSearchTemplate('trash')">Daily Trash Cleaner</button>
+              <button class="reset-filters-btn" onclick="loadSearchTemplate('hundo')">Find Hundos (4*)</button>
+              <button class="reset-filters-btn" onclick="loadSearchTemplate('pvp')">High IV (3*,4*)</button>
+              <button class="reset-filters-btn" onclick="loadSearchTemplate('evolve')">Ready to Evolve</button>
+              <button class="reset-filters-btn long-btn" onclick="loadSearchTemplate('safe-transfer')">⚠️ Ultimate Transfer Safe String</button>
+            </div>
+          </div>
+
+          <!-- Code Box Output (Column 2) -->
+          <div class="level-panel search-output-panel">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 8px;">Generated Search String</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:14px;">Copy and paste this string directly into the Pokémon GO game search filter.</p>
+            
+            <div class="code-output-box">
+              <pre id="search-string-output">4*</pre>
+              <button id="btn-copy-string" class="copy-btn" onclick="copySearchString()" title="Copy to clipboard">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 1: Core Filters (Column 1) -->
+          <div class="level-panel maker-card">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px; color: var(--color-primary);"><i class="fa-solid fa-sliders" style="margin-right: 8px;"></i>Core Filters</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div class="form-group">
+                <label>Appraisal (IV Stars)</label>
+                <div class="checkbox-grid-2">
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-iv-0" onchange="generateSearchString()">0* (0-50%)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-iv-1" onchange="generateSearchString()">1* (51-64%)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-iv-2" onchange="generateSearchString()">2* (65-80%)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-iv-3" onchange="generateSearchString()">3* (82-98%)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-iv-4" onchange="generateSearchString()">4* (100% IV)</label>
+                </div>
+              </div>
+
+              <div class="calc-row">
+                <div class="form-group">
+                  <label>CP Range (Min-Max)</label>
+                  <div style="display:flex; gap:8px;">
+                    <input type="number" id="ss-cp-min" class="form-input" placeholder="Min" style="width:50%;" oninput="generateSearchString()">
+                    <input type="number" id="ss-cp-max" class="form-input" placeholder="Max" style="width:50%;" oninput="generateSearchString()">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>HP Range (Min-Max)</label>
+                  <div style="display:flex; gap:8px;">
+                    <input type="number" id="ss-hp-min" class="form-input" placeholder="Min" style="width:50%;" oninput="generateSearchString()">
+                    <input type="number" id="ss-hp-max" class="form-input" placeholder="Max" style="width:50%;" oninput="generateSearchString()">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Recency & Age</label>
+                <select id="ss-age-select" class="filter-select" onchange="generateSearchString()">
+                  <option value="all">Any time</option>
+                  <option value="age0">Caught Today (age0)</option>
+                  <option value="age1">Caught last 24h (age0-1)</option>
+                  <option value="age7">Caught last week (age0-7)</option>
+                  <option value="age30">Caught last month (age0-30)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Friendship & Trades (Column 2) -->
+          <div class="level-panel maker-card">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px; color: var(--color-secondary);"><i class="fa-solid fa-user-group" style="margin-right: 8px;"></i>Friendship & Trades</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div class="form-group">
+                <label>Buddy Level</label>
+                <div class="checkbox-grid-2">
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-buddy-0" onchange="generateSearchString()">Buddy 0 (None)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-buddy-1" onchange="generateSearchString()">Buddy 1 (Good)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-buddy-2" onchange="generateSearchString()">Buddy 2 (Great)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-buddy-3" onchange="generateSearchString()">Buddy 3 (Ultra)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-buddy-4" onchange="generateSearchString()">Buddy 4 (Best)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-buddy-5" onchange="generateSearchString()">Buddy 5 (Max Buddy)</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Trade Distance</label>
+                <div class="checkbox-grid-2">
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-dist-0" onchange="generateSearchString()">Local (0-9 km)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-dist-10" onchange="generateSearchString()">Medium (10-99 km)</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-dist-100" onchange="generateSearchString()">Distance (100+ km)</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Rarity & Combat States (Spans both columns) -->
+          <div class="level-panel maker-card search-card-full">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px; color: var(--color-accent);"><i class="fa-solid fa-bolt" style="margin-right: 8px;"></i>Rarity & Combat States</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div class="form-group">
+                <label>Rarity States</label>
+                <div class="checkbox-grid-2">
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-exc-legendary" onchange="generateSearchString()">Legendary</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-exc-mythical" onchange="generateSearchString()">Mythical</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-exc-ultra" onchange="generateSearchString()">Ultra Beast</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-exc-baby" onchange="generateSearchString()">Baby Pokémon</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-exc-eggonly" onchange="generateSearchString()">Egg Hatches</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-exc-mega" onchange="generateSearchString()">Mega Eligible</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Combat States & Moves</label>
+                <div class="checkbox-grid-2">
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-state-shiny" onchange="generateSearchString()">Shiny</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-state-shadow" onchange="generateSearchString()">Shadow</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-state-purified" onchange="generateSearchString()">Purified</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-state-lucky" onchange="generateSearchString()">Lucky</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-state-costume" onchange="generateSearchString()">Costume</label>
+                  <label class="checkbox-custom-label"><input type="checkbox" id="ss-state-evolve" onchange="generateSearchString()">Can Evolve</label>
+                  <label class="checkbox-custom-label long-btn"><input type="checkbox" id="ss-state-exclmove" onchange="generateSearchString()">Has Exclusive Moves (@special)</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="ss-custom-species">Move Type or Custom Species (e.g. @fire or pikachu)</label>
+                <input type="text" id="ss-custom-species" class="form-input" placeholder="e.g. @water, larvitar, 150" oninput="generateSearchString()">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB 7: Live Events & Raids -->
+      <div class="tab-panel" id="panel-events">
+        <div class="section-header">
+          <h2 class="section-title">Live Events & Raids</h2>
+          <p class="section-desc">View current events, raid bosses, mega raids, and active bonuses fetched live from LeekDuck.</p>
+        </div>
+        
+        <div class="events-layout-grid">
+          <!-- Column 1: Current Events (50% width on desktop) -->
+          <div class="events-col-1">
+            <div class="level-panel">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-fire" style="color:var(--color-secondary); margin-right: 8px;"></i>What's Happening This Week</h3>
+              <div id="events-loading" style="text-align:center; padding:30px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading live events...</div>
+              <div id="events-list" class="events-cards-grid" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+          </div>
+          
+          <!-- Column 2: 5-Star & 3-Star Battle (25% width on desktop) -->
+          <div class="events-col-2">
+            <div class="level-panel">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-skull-crossbones" style="color:var(--color-secondary); margin-right: 8px;"></i>5-Star & 3-Star Raids</h3>
+              <div id="raids-col2-loading" style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading raids...</div>
+              <div id="raids-col2-container" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+          </div>
+
+          <!-- Column 3: Mega Raids & Max Battles (25% width on desktop) -->
+          <div class="events-col-3">
+            <div class="level-panel">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-bolt" style="color:var(--color-accent); margin-right: 8px;"></i>Mega & Max Battles</h3>
+              <div id="raids-col3-loading" style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading raids...</div>
+              <div id="raids-col3-container" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- POKEMON DETAIL MODAL -->
+  <div id="detail-modal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="modal-title-left">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="modal-poke-id" style="font-family:var(--font-title); font-weight:700; color:var(--text-dim)">#000</span>
+            <span id="modal-poke-rarity" class="pokemon-rarity-badge rarity-C">Rank C</span>
+          </div>
+          <h2 id="modal-poke-name" style="font-family:var(--font-title); font-size:22px; font-weight:700; margin: 0;">Pokémon Name</h2>
+        </div>
+        <div class="modal-title-right" style="display: flex; align-items: center; gap: 8px; margin-left: auto; margin-right: 15px;">
+          <div id="modal-poke-types" class="pokemon-types" style="display: flex; gap: 4px;">
+            <!-- Dynamic -->
+          </div>
+          <span id="modal-poke-category" class="classification-badge">Classification</span>
+        </div>
+        <button class="close-modal-btn" onclick="closeModal(null)">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        
+        <!-- Info dynamic description section spans full width -->
+        <div class="detail-section" id="modal-desc-section">
+          <!-- Dynamic card description text -->
+        </div>
+
+        <div class="modal-col-left">
+          
+          <!-- Combat Metrics -->
+          <div class="detail-section">
+            <h3>Combat Metrics</h3>
+            <div class="stats-grid" style="margin-bottom:10px;">
+              <div class="stat-item">
+                <div id="modal-stat-cp" class="stat-val" style="color: var(--color-secondary)">4000</div>
+                <div class="stat-lbl">Base Max CP (L50)</div>
+              </div>
+              <div class="stat-item">
+                <div id="modal-stat-utility" class="stat-val" style="color: var(--color-primary)">Meta</div>
+                <div class="stat-lbl">Battle Utility</div>
+              </div>
+              <div class="stat-item">
+                <div id="modal-stat-exclusivity" class="stat-val" style="color: var(--color-accent); font-size:12px; font-weight:800; padding:4px 0;">Mythical</div>
+                <div class="stat-lbl">Exclusivity Tag</div>
+              </div>
+            </div>
+            
+            <div class="stats-grid" style="margin-top:10px;">
+              <div class="stat-item">
+                <div id="modal-base-att" class="stat-val">250</div>
+                <div class="stat-lbl">Base Attack</div>
+              </div>
+              <div class="stat-item">
+                <div id="modal-base-def" class="stat-val">200</div>
+                <div class="stat-lbl">Base Defense</div>
+              </div>
+              <div class="stat-item">
+                <div id="modal-base-sta" class="stat-val">200</div>
+                <div class="stat-lbl">Base Stamina</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Adventure Effect Section -->
+          <div class="detail-section" id="modal-adventure-section" style="display:none;">
+            <h3>Adventure Effect</h3>
+            <div class="info-alert">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--color-accent); font-size: 16px; margin-top: 2px;"></i>
+              <div>
+                <strong id="modal-adventure-title" style="color: var(--color-accent); font-family: var(--font-title); font-size: 13px;">Adventure Effect</strong>
+                <div id="modal-adventure-details" style="font-size:11px; margin-top:3px; color: var(--text-muted); line-height: 1.4;">Description</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Type Effectiveness in Pokémon GO -->
+          <div class="detail-section">
+            <h3>Type Effectiveness in Pokémon GO</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px;">
+              <div>
+                <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:4px; font-weight:700; text-transform:uppercase;">Super Effective Offense (1.6x damage to)</span>
+                <div id="modal-strengths" class="coverage-list">
+                  <!-- Strengths badges -->
+                </div>
+              </div>
+              <div style="margin-top:6px; border-top: 1px solid var(--border-subtle); padding-top:6px;">
+                <span style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:4px; font-weight:700; text-transform:uppercase;">Super Effective Weakness (Takes 1.6x - 2.56x from)</span>
+                <div id="modal-weaknesses" class="coverage-list">
+                  <!-- Weaknesses badges -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommended Movesets -->
+          <div class="detail-section">
+            <h3>Recommended Movesets</h3>
+            <div class="moves-list" id="modal-moves-container">
+              <!-- Dynamic moves with exclusive tags -->
+            </div>
+          </div>
+
+          <!-- PvP League Rankings -->
+          <div class="detail-section" id="modal-pvp-rankings-section">
+            <h3>PvP League Rankings</h3>
+            <div class="pvp-rankings-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px;">
+              <div class="pvp-rank-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Great League</div>
+                <div id="modal-pvp-rank-great" style="font-size: 18px; font-weight: 800; color: var(--color-primary); margin-top: 4px;">#--</div>
+              </div>
+              <div class="pvp-rank-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Ultra League</div>
+                <div id="modal-pvp-rank-ultra" style="font-size: 18px; font-weight: 800; color: var(--color-secondary); margin-top: 4px;">#--</div>
+              </div>
+              <div class="pvp-rank-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Master League</div>
+                <div id="modal-pvp-rank-master" style="font-size: 18px; font-weight: 800; color: var(--color-accent); margin-top: 4px;">#--</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Storage & Collection Optimization Tip -->
+          <div class="detail-section" style="margin-bottom:20px;">
+            <h3>Storage & Collection Optimization Tip</h3>
+            <div id="modal-opt-tip" class="tip-box">
+              Keep only one of this species since it has low battle utility. Prioritize Shiny or High IV.
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-col-right">
+
+          <!-- 100% IV (Hundo) CP Reference Chart -->
+          <div class="detail-section">
+            <h3>100% IV (Hundo) CP Reference Chart</h3>
+            <p style="font-size:10px; color:var(--text-muted); margin-bottom:8px;">Exact Hundo CP values for different encounter levels computed from base stats.</p>
+            <table class="cp-table">
+              <thead>
+                <tr>
+                  <th>Encounter Method</th>
+                  <th>Encounter Level</th>
+                  <th>100% IV CP (Hundo)</th>
+                </tr>
+              </thead>
+              <tbody id="modal-hundo-cp-table-body">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mega Details -->
+          <div class="detail-section" id="modal-mega-section">
+            <h3>Mega Evolution Details</h3>
+            <div class="info-alert">
+              <i class="fa-solid fa-atom" style="color: var(--color-mega);"></i>
+              <div>
+                <strong id="modal-mega-name" style="color: var(--color-mega)">Mega Venusaur</strong>
+                <div id="modal-mega-details" style="font-size:11px; margin-top:2px;">Initial Energy Cost: 200 | Type: Grass / Poison</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Max Details -->
+          <div class="detail-section" id="modal-max-section">
+            <h3>Max Form Details (Dynamax / Gigantamax)</h3>
+            <div class="info-alert">
+              <i class="fa-solid fa-bolt" style="color: var(--color-max);"></i>
+              <div>
+                <strong>Dynamax Form Eligible</strong>
+                <div id="modal-max-details" style="font-size:11px; margin-top:2px;">Can Dynamax in Max Battles and unlock Max Moves using Max Particles. Gigantamax form is eligible!</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Did You Know? -->
+          <div class="detail-section" id="modal-fun-fact-section" style="margin-bottom:0;">
+            <h3>Did You Know?</h3>
+            <div class="tip-box" style="border-left-color: var(--color-accent); background: rgba(245, 176, 65, 0.03);">
+              <i class="fa-solid fa-lightbulb" style="color: var(--color-accent); margin-right: 6px;"></i>
+              <span id="modal-fun-fact-text">Fun fact goes here...</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Javascript Inclusions -->
+  <script src="pokemonData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
