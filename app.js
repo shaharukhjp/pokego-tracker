@@ -1,9 +1,9 @@
 // Pokémon GO Personal Tracker - Core Application Logic (Updated)
 
 // --- SUPABASE CLIENT & AUTH CONFIG ---
-let supabase = null;
+let supabaseClient = null;
 if (window.supabase && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey) {
-  supabase = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+  supabaseClient = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
   console.log("Supabase Client initialized successfully.");
 } else {
   console.log("Supabase config is missing or incomplete. Running in Guest/Offline mode.");
@@ -53,7 +53,7 @@ function toggleAuthMode(event) {
 }
 
 async function loginWithProvider(provider) {
-  if (!supabase) {
+  if (!supabaseClient) {
     alert("Supabase is not configured. Please add your credentials in config.js first.");
     return;
   }
@@ -65,7 +65,7 @@ async function loginWithProvider(provider) {
     if (provider === 'google') {
       options.scopes = 'https://www.googleapis.com/auth/drive.appdata';
     }
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: provider,
       options: options
     });
@@ -78,7 +78,7 @@ async function loginWithProvider(provider) {
 
 async function handleEmailAuth(event) {
   if (event) event.preventDefault();
-  if (!supabase) {
+  if (!supabaseClient) {
     alert("Supabase is not configured. Please add your credentials in config.js first.");
     return;
   }
@@ -99,7 +99,7 @@ async function handleEmailAuth(event) {
 
   try {
     if (currentAuthMode === 'login') {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email,
         password: password
       });
@@ -107,7 +107,7 @@ async function handleEmailAuth(event) {
       console.log("Logged in successfully:", data);
       closeAuthModal(null);
     } else {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabaseClient.auth.signUp({
         email: email,
         password: password
       });
@@ -122,9 +122,9 @@ async function handleEmailAuth(event) {
 }
 
 async function handleLogout() {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
     window.location.reload();
   } catch (err) {
@@ -158,7 +158,7 @@ function updateSyncStatusIndicator(status, text) {
 async function loadCloudStateAndMerge(user) {
   updateSyncStatusIndicator('syncing', 'Fetching cloud data...');
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_states')
       .select('state')
       .eq('user_id', user.id)
@@ -198,9 +198,9 @@ async function loadCloudStateAndMerge(user) {
 }
 
 async function pushStateToCloud(userId, stateToPush) {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('user_states')
       .upsert({
         user_id: userId,
@@ -980,8 +980,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   syncAllDataOnline(false);
 
   // Set up Supabase auth change listener
-  if (supabase) {
-    supabase.auth.onAuthStateChange(async (event, session) => {
+  if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
       currentUserSession = session;
       const loggedOutEl = document.getElementById('auth-logged-out');
       const loggedInEl = document.getElementById('auth-logged-in');
@@ -1433,7 +1433,7 @@ function saveState() {
   updateDashboardWidgets();
 
   // If logged in to Supabase, sync changes (debounced) using active provider
-  if (supabase && currentUserSession) {
+  if (supabaseClient && currentUserSession) {
     if (activeSyncProvider === 'google-drive' && currentUserSession.provider_token) {
       updateSyncStatusIndicator('syncing', 'Syncing to Drive...');
       clearTimeout(syncTimeoutId);
