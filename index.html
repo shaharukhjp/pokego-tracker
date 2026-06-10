@@ -49,7 +49,36 @@
       
       <div class="nav-footer">
         <p>Trainer Level Cap: 80</p>
-        <p style="margin-top: 4px; font-size: 10px;">Data saved locally</p>
+        
+        <!-- Cloud Sync Status Widget -->
+        <div id="cloud-sync-status" class="sync-status-container" style="display: none;">
+          <span class="sync-dot synced"></span>
+          <span id="sync-status-text" class="sync-text">Cloud Backed Up</span>
+        </div>
+
+        <!-- User Authentication & Profile Section -->
+        <div class="user-auth-section">
+          <!-- Logged Out State -->
+          <div id="auth-logged-out" class="auth-state-container">
+            <button class="btn-auth-trigger" id="btn-login-trigger" onclick="openAuthModal()">
+              <i class="fa-solid fa-right-to-bracket"></i> Sign In / Sync
+            </button>
+          </div>
+          
+          <!-- Logged In State -->
+          <div id="auth-logged-in" class="auth-state-container" style="display: none;">
+            <div class="user-profile-summary">
+              <img id="user-avatar" class="user-profile-avatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Avatar">
+              <div class="user-profile-details">
+                <span id="user-display-name" class="user-name">Trainer</span>
+                <span id="user-email-subtitle" class="user-email">Logged in</span>
+              </div>
+            </div>
+            <button class="btn-auth-logout" id="btn-logout" onclick="handleLogout()" title="Sign Out">
+              <i class="fa-solid fa-power-off"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -867,7 +896,70 @@
     </div>
   </div>
 
+  <!-- AUTHENTICATION MODAL -->
+  <div id="auth-modal" class="modal-overlay" onclick="closeAuthModal(event)">
+    <div class="modal-card auth-modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 style="font-family: var(--font-title); font-size: 20px; font-weight: 700; margin: 0;">Cloud Synchronization</h2>
+        <button class="close-modal-btn" onclick="closeAuthModal(null)">&times;</button>
+      </div>
+      <div class="modal-body auth-modal-body">
+        <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 20px; line-height: 1.4;">
+          Sign in to sync your collection, storage limits, medals, and level roadmap across devices automatically.
+        </p>
+
+        <!-- Social Login Providers Grid -->
+        <div class="social-login-grid">
+          <button class="btn-social google" onclick="loginWithProvider('google')">
+            <img src="https://lh3.googleusercontent.com/COxitfgDO1t3sAcocJwux5WN2Gz2xLHgNJA4sYOKnmJD719dB3scJH25K5zgmflcvw" alt="Google">
+            Google
+          </button>
+          <button class="btn-social github" onclick="loginWithProvider('github')">
+            <i class="fa-brands fa-github"></i>
+            GitHub
+          </button>
+        </div>
+
+        <div class="auth-divider">
+          <span>or use email</span>
+        </div>
+
+        <!-- Credentials Form -->
+        <form id="email-auth-form" onsubmit="handleEmailAuth(event)" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label for="auth-email">Email Address</label>
+            <input type="email" id="auth-email" class="form-input" required placeholder="trainer@pokedex.com">
+          </div>
+          <div class="form-group" id="auth-password-group">
+            <label for="auth-password">Password</label>
+            <input type="password" id="auth-password" class="form-input" required placeholder="••••••••" minlength="6">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <a href="#" id="auth-toggle-mode" onclick="toggleAuthMode(event)" style="font-size: 11px; color: var(--color-primary); text-decoration: none; font-weight: 600;">
+              Need an account? Sign Up
+            </a>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-auth-submit" style="width: 100%; margin-top: 10px;">
+            <i class="fa-solid fa-right-to-bracket"></i> <span id="auth-submit-text">Sign In</span>
+          </button>
+        </form>
+
+        <div id="auth-error-msg" class="auth-error-container" style="display: none;">
+          <i class="fa-solid fa-circle-exclamation"></i> <span id="auth-error-text">Authentication failed.</span>
+        </div>
+        
+        <div id="auth-success-msg" class="auth-success-container" style="display: none;">
+          <i class="fa-solid fa-circle-check"></i> Check your email for verification link.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Javascript Inclusions -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <script src="pokemonData.js"></script>
   <script src="app.js"></script>
 </body>

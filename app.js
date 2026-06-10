@@ -1,5 +1,209 @@
 // Pokémon GO Personal Tracker - Core Application Logic (Updated)
 
+// --- SUPABASE CLIENT & AUTH CONFIG ---
+let supabase = null;
+if (window.supabase && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey) {
+  supabase = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+  console.log("Supabase Client initialized successfully.");
+} else {
+  console.log("Supabase config is missing or incomplete. Running in Guest/Offline mode.");
+}
+
+let currentUserSession = null;
+let syncTimeoutId = null;
+let currentAuthMode = 'login'; // 'login' or 'signup'
+
+function openAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    const errEl = document.getElementById('auth-error-msg');
+    const succEl = document.getElementById('auth-success-msg');
+    if (errEl) errEl.style.display = 'none';
+    if (succEl) succEl.style.display = 'none';
+  }
+}
+
+function closeAuthModal(event) {
+  if (!event || event.target.id === 'auth-modal' || event.target.className === 'close-modal-btn') {
+    const modal = document.getElementById('auth-modal');
+    if (modal) modal.style.display = 'none';
+  }
+}
+
+function toggleAuthMode(event) {
+  if (event) event.preventDefault();
+  const toggleLink = document.getElementById('auth-toggle-mode');
+  const toggleLabel = document.getElementById('btn-auth-submit')?.querySelector('span') || document.getElementById('auth-submit-text');
+  const submitBtnText = document.getElementById('auth-submit-text');
+  
+  if (currentAuthMode === 'login') {
+    currentAuthMode = 'signup';
+    if (toggleLink) toggleLink.textContent = "Already have an account? Sign In";
+    if (submitBtnText) submitBtnText.textContent = "Sign Up";
+    if (toggleLabel) toggleLabel.textContent = "Sign Up";
+  } else {
+    currentAuthMode = 'login';
+    if (toggleLink) toggleLink.textContent = "Need an account? Sign Up";
+    if (submitBtnText) submitBtnText.textContent = "Sign In";
+    if (toggleLabel) toggleLabel.textContent = "Sign In";
+  }
+}
+
+async function loginWithProvider(provider) {
+  if (!supabase) {
+    alert("Supabase is not configured. Please add your credentials in config.js first.");
+    return;
+  }
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: provider,
+      options: {
+        redirectTo: window.location.origin + window.location.pathname
+      }
+    });
+    if (error) throw error;
+  } catch (err) {
+    console.error(`OAuth login failed for ${provider}:`, err);
+    showAuthError(err.message || `Failed to sign in with ${provider}`);
+  }
+}
+
+async function handleEmailAuth(event) {
+  if (event) event.preventDefault();
+  if (!supabase) {
+    alert("Supabase is not configured. Please add your credentials in config.js first.");
+    return;
+  }
+
+  const email = document.getElementById('auth-email').value;
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error-msg');
+  const succEl = document.getElementById('auth-success-msg');
+  
+  if (errEl) errEl.style.display = 'none';
+  if (succEl) succEl.style.display = 'none';
+
+  try {
+    if (currentAuthMode === 'login') {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+      if (error) throw error;
+      console.log("Logged in successfully:", data);
+      closeAuthModal(null);
+    } else {
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password
+      });
+      if (error) throw error;
+      console.log("Signed up successfully:", data);
+      if (succEl) succEl.style.display = 'flex';
+    }
+  } catch (err) {
+    console.error("Email auth failed:", err);
+    showAuthError(err.message || "Authentication failed. Please check credentials.");
+  }
+}
+
+async function handleLogout() {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    window.location.reload();
+  } catch (err) {
+    console.error("Sign out failed:", err);
+  }
+}
+
+function showAuthError(msg) {
+  const errEl = document.getElementById('auth-error-msg');
+  const errText = document.getElementById('auth-error-text');
+  if (errEl && errText) {
+    errText.textContent = msg;
+    errEl.style.display = 'flex';
+  }
+}
+
+function updateSyncStatusIndicator(status, text) {
+  const statusEl = document.getElementById('cloud-sync-status');
+  const dotEl = statusEl?.querySelector('.sync-dot');
+  const textEl = document.getElementById('sync-status-text');
+  
+  if (!statusEl || !dotEl || !textEl) return;
+  
+  statusEl.style.display = 'flex';
+  
+  dotEl.className = 'sync-dot';
+  dotEl.classList.add(status);
+  textEl.textContent = text;
+}
+
+async function loadCloudStateAndMerge(user) {
+  updateSyncStatusIndicator('syncing', 'Fetching cloud data...');
+  try {
+    const { data, error } = await supabase
+      .from('user_states')
+      .select('state')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data && data.state) {
+      console.log("Cloud state found. Restoring...");
+      state = { ...state, ...data.state };
+      state.pokemonCollection = { ...state.pokemonCollection, ...data.state.pokemonCollection };
+      state.items = { ...state.items, ...data.state.items };
+      state.medals = { ...state.medals, ...data.state.medals };
+      state.friends = data.state.friends || state.friends;
+      
+      localStorage.setItem('pokego_tracker_state', JSON.stringify(state));
+      
+      renderPokedex();
+      renderLevelTracker();
+      renderMedalTracker();
+      renderFriendsTracker();
+      renderItemInventory();
+      updateStorageProgress();
+      updateItemStorageProgress();
+      generateSearchString();
+      updateDashboardWidgets();
+      
+      updateSyncStatusIndicator('synced', 'Cloud Backed Up');
+    } else {
+      console.log("No cloud state found. Pushing current local state as initial backup...");
+      await pushStateToCloud(user.id, state);
+    }
+  } catch (e) {
+    console.error("Cloud data pull failed:", e);
+    updateSyncStatusIndicator('error', 'Sync Failed');
+  }
+}
+
+async function pushStateToCloud(userId, stateToPush) {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('user_states')
+      .upsert({
+        user_id: userId,
+        state: stateToPush,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+    console.log("Cloud sync completed successfully.");
+    updateSyncStatusIndicator('synced', 'Cloud Backed Up');
+  } catch (e) {
+    console.error("Cloud sync failed:", e);
+    updateSyncStatusIndicator('error', 'Sync Failed');
+  }
+}
+
 // --- PVPOKE RANKINGS CACHE ---
 let pvpokeRankings = {
   great: [],
@@ -652,6 +856,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   // Run background sync manager
   syncAllDataOnline(false);
+
+  // Set up Supabase auth change listener
+  if (supabase) {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      currentUserSession = session;
+      const loggedOutEl = document.getElementById('auth-logged-out');
+      const loggedInEl = document.getElementById('auth-logged-in');
+      const syncStatusEl = document.getElementById('cloud-sync-status');
+
+      if (session) {
+        console.log("Auth State Changed: Signed In", session.user);
+        if (loggedOutEl) loggedOutEl.style.display = 'none';
+        if (loggedInEl) loggedInEl.style.display = 'flex';
+
+        const user = session.user;
+        const displayName = user.user_metadata?.full_name || user.email.split('@')[0];
+        const avatarUrl = user.user_metadata?.avatar_url || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+        
+        const nameEl = document.getElementById('user-display-name');
+        const emailEl = document.getElementById('user-email-subtitle');
+        const avatarEl = document.getElementById('user-avatar');
+        
+        if (nameEl) nameEl.textContent = displayName;
+        if (emailEl) emailEl.textContent = user.email;
+        if (avatarEl) avatarEl.src = avatarUrl;
+
+        await loadCloudStateAndMerge(user);
+      } else {
+        console.log("Auth State Changed: Signed Out");
+        if (loggedOutEl) loggedOutEl.style.display = 'flex';
+        if (loggedInEl) loggedInEl.style.display = 'none';
+        if (syncStatusEl) syncStatusEl.style.display = 'none';
+      }
+    });
+  }
 });
 
 async function fetchReleasedPokemon() {
@@ -1057,6 +1296,15 @@ function initFreshState() {
 function saveState() {
   localStorage.setItem('pokego_tracker_state', JSON.stringify(state));
   updateDashboardWidgets();
+
+  // If logged in to Supabase, push changes to the database (debounced)
+  if (supabase && currentUserSession) {
+    updateSyncStatusIndicator('syncing', 'Syncing changes...');
+    clearTimeout(syncTimeoutId);
+    syncTimeoutId = setTimeout(() => {
+      pushStateToCloud(currentUserSession.user.id, state);
+    }, 1500); // 1.5s debounce
+  }
 }
 
 function initUIElements() {
