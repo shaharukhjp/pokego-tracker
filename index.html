@@ -904,19 +904,26 @@
         <button class="close-modal-btn" onclick="closeAuthModal(null)">&times;</button>
       </div>
       <div class="modal-body auth-modal-body">
-        <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 20px; line-height: 1.4;">
-          Sign in to sync your collection, storage limits, medals, and level roadmap across devices automatically.
-        </p>
+        <div class="auth-features-list">
+          <div class="auth-feature-item">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span><strong>Cloud Synchronization</strong>: Sync your collection state across devices</span>
+          </div>
+          <div class="auth-feature-item">
+            <i class="fa-solid fa-folder-open"></i>
+            <span><strong>Google Drive Storage</strong>: Gmail users back up to their own Google Drive</span>
+          </div>
+          <div class="auth-feature-item">
+            <i class="fa-solid fa-database"></i>
+            <span><strong>Supabase Database</strong>: Custom email logins store data securely in the cloud</span>
+          </div>
+        </div>
 
-        <!-- Social Login Providers Grid -->
-        <div class="social-login-grid">
-          <button class="btn-social google" onclick="loginWithProvider('google')">
+        <!-- Social Login Providers -->
+        <div class="social-login-container" style="margin-bottom: 16px;">
+          <button class="btn-social google" onclick="loginWithProvider('google')" style="width: 100%;">
             <img src="https://lh3.googleusercontent.com/COxitfgDO1t3sAcocJwux5WN2Gz2xLHgNJA4sYOKnmJD719dB3scJH25K5zgmflcvw" alt="Google">
-            Google
-          </button>
-          <button class="btn-social github" onclick="loginWithProvider('github')">
-            <i class="fa-brands fa-github"></i>
-            GitHub
+            Continue with Google
           </button>
         </div>
 
@@ -961,6 +968,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="pokemonData.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=1.0.1"></script>
 </body>
 </html>

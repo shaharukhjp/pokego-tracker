@@ -2550,5 +2550,38 @@ input[id*="max"]:checked + .check-btn { background-color: rgba(255, 211, 42, 0.1
   line-height: 1.4;
 }
 
+/* Auth Modal Checklist / Feature Card Styling */
+.auth-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.auth-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.auth-feature-item i {
+  color: var(--color-primary);
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+.auth-feature-item strong {
+  color: var(--text-main);
+}
+
+
 
 
