@@ -2565,10 +2565,12 @@ input[id*="max"]:checked + .check-btn { background-color: rgba(255, 211, 42, 0.1
 .auth-feature-item {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.4;
+  text-align: center;
 }
 
 .auth-feature-item i {

@@ -899,9 +899,9 @@
   <!-- AUTHENTICATION MODAL -->
   <div id="auth-modal" class="modal-overlay" onclick="closeAuthModal(event)">
     <div class="modal-card auth-modal-card" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h2 style="font-family: var(--font-title); font-size: 20px; font-weight: 700; margin: 0;">Cloud Synchronization</h2>
-        <button class="close-modal-btn" onclick="closeAuthModal(null)">&times;</button>
+      <div class="modal-header" style="display: flex; justify-content: center; align-items: center; position: relative; padding: 20px 24px;">
+        <h2 style="font-family: var(--font-title); font-size: 20px; font-weight: 700; margin: 0; text-align: center;">Cloud Synchronization</h2>
+        <button class="close-modal-btn" onclick="closeAuthModal(null)" style="position: absolute; right: 24px;">&times;</button>
       </div>
       <div class="modal-body auth-modal-body">
         <!-- Credentials Form -->
@@ -915,8 +915,8 @@
             <input type="password" id="auth-password" class="form-input" required placeholder="••••••••" minlength="6">
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-            <a href="#" id="auth-toggle-mode" onclick="toggleAuthMode(event)" style="font-size: 11px; color: var(--color-primary); text-decoration: none; font-weight: 600;">
+          <div style="display: flex; justify-content: center; align-items: center; margin-top: 4px;">
+            <a href="#" id="auth-toggle-mode" onclick="toggleAuthMode(event)" style="font-size: 11px; color: var(--color-primary); text-decoration: none; font-weight: 600; text-align: center;">
               Need an account? Sign Up
             </a>
           </div>
@@ -968,6 +968,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="pokemonData.js"></script>
-  <script src="app.js?v=1.0.2"></script>
+  <script src="app.js?v=1.0.3"></script>
 </body>
 </html>
