@@ -12,6 +12,8 @@ if (window.supabase && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && w
 let currentUserSession = null;
 let syncTimeoutId = null;
 let currentAuthMode = 'login'; // 'login' or 'signup'
+let activeSyncProvider = 'local'; // 'local', 'supabase', 'google-drive'
+let googleDriveFileId = null;     // Cached file ID for Drive saves
 
 function openAuthModal() {
   const modal = document.getElementById('auth-modal');
@@ -56,11 +58,16 @@ async function loginWithProvider(provider) {
     return;
   }
   try {
+    const options = {
+      redirectTo: window.location.origin + window.location.pathname
+    };
+    // Dynamically request Google Drive AppData scope when signing in with Google
+    if (provider === 'google') {
+      options.scopes = 'https://www.googleapis.com/auth/drive.appdata';
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: provider,
-      options: {
-        redirectTo: window.location.origin + window.location.pathname
-      }
+      options: options
     });
     if (error) throw error;
   } catch (err) {
@@ -76,13 +83,19 @@ async function handleEmailAuth(event) {
     return;
   }
 
-  const email = document.getElementById('auth-email').value;
+  const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   const errEl = document.getElementById('auth-error-msg');
   const succEl = document.getElementById('auth-success-msg');
   
   if (errEl) errEl.style.display = 'none';
   if (succEl) succEl.style.display = 'none';
+
+  // Force Google OAuth for Gmail accounts to facilitate Google Drive sync
+  if (email.toLowerCase().endsWith('@gmail.com')) {
+    showAuthError("Gmail accounts must use the 'Sign In with Google' button to store data in Google Drive.");
+    return;
+  }
 
   try {
     if (currentAuthMode === 'login') {
@@ -173,7 +186,7 @@ async function loadCloudStateAndMerge(user) {
       generateSearchString();
       updateDashboardWidgets();
       
-      updateSyncStatusIndicator('synced', 'Cloud Backed Up');
+      updateSyncStatusIndicator('synced', 'Supabase Synced');
     } else {
       console.log("No cloud state found. Pushing current local state as initial backup...");
       await pushStateToCloud(user.id, state);
@@ -197,10 +210,119 @@ async function pushStateToCloud(userId, stateToPush) {
 
     if (error) throw error;
     console.log("Cloud sync completed successfully.");
-    updateSyncStatusIndicator('synced', 'Cloud Backed Up');
+    updateSyncStatusIndicator('synced', 'Supabase Synced');
   } catch (e) {
     console.error("Cloud sync failed:", e);
     updateSyncStatusIndicator('error', 'Sync Failed');
+  }
+}
+
+// --- GOOGLE DRIVE SYNC HELPERS ---
+async function loadGoogleDriveState(providerToken) {
+  updateSyncStatusIndicator('syncing', 'Fetching Google Drive data...');
+  try {
+    const queryUrl = 'https://www.googleapis.com/drive/v3/files?q=name%3D%27pokego_tracker_save.json%27&spaces=appDataFolder';
+    const listRes = await fetch(queryUrl, {
+      headers: { 'Authorization': `Bearer ${providerToken}` }
+    });
+    if (!listRes.ok) throw new Error(`Search failed: HTTP ${listRes.status}`);
+    const listData = await listRes.json();
+    
+    const file = listData.files && listData.files[0];
+    if (file) {
+      googleDriveFileId = file.id;
+      console.log("Google Drive save file found. ID:", googleDriveFileId);
+      
+      const downloadUrl = `https://www.googleapis.com/drive/v3/files/${googleDriveFileId}?alt=media`;
+      const mediaRes = await fetch(downloadUrl, {
+        headers: { 'Authorization': `Bearer ${providerToken}` }
+      });
+      if (!mediaRes.ok) throw new Error(`Download failed: HTTP ${mediaRes.status}`);
+      const cloudState = await mediaRes.json();
+      
+      if (cloudState) {
+        console.log("Restoring Google Drive save data...");
+        state = { ...state, ...cloudState };
+        state.pokemonCollection = { ...state.pokemonCollection, ...cloudState.pokemonCollection };
+        state.items = { ...state.items, ...cloudState.items };
+        state.medals = { ...state.medals, ...cloudState.medals };
+        state.friends = cloudState.friends || state.friends;
+        
+        localStorage.setItem('pokego_tracker_state', JSON.stringify(state));
+        
+        renderPokedex();
+        renderLevelTracker();
+        renderMedalTracker();
+        renderFriendsTracker();
+        renderItemInventory();
+        updateStorageProgress();
+        updateItemStorageProgress();
+        generateSearchString();
+        updateDashboardWidgets();
+        
+        updateSyncStatusIndicator('synced', 'Google Drive Synced');
+      }
+    } else {
+      console.log("No Google Drive save file found. Initializing upload...");
+      await pushGoogleDriveState(providerToken, state);
+    }
+  } catch (e) {
+    console.error("Google Drive pull failed:", e);
+    updateSyncStatusIndicator('error', 'Drive Sync Failed');
+  }
+}
+
+async function pushGoogleDriveState(providerToken, stateToPush) {
+  try {
+    const fileContent = JSON.stringify(stateToPush);
+    
+    if (googleDriveFileId) {
+      const updateUrl = `https://www.googleapis.com/upload/drive/v3/files/${googleDriveFileId}?uploadType=media`;
+      const res = await fetch(updateUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${providerToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: fileContent
+      });
+      if (!res.ok) throw new Error(`Update HTTP ${res.status}`);
+      console.log("Google Drive file updated successfully.");
+    } else {
+      const createUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      const metadata = {
+        name: 'pokego_tracker_save.json',
+        parents: ['appDataFolder']
+      };
+      
+      const boundary = 'foo_bar_baz';
+      const multipartBody = 
+        `--${boundary}\r\n` +
+        `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+        `${JSON.stringify(metadata)}\r\n` +
+        `--${boundary}\r\n` +
+        `Content-Type: application/json\r\n\r\n` +
+        `${fileContent}\r\n` +
+        `--${boundary}--`;
+         
+      const res = await fetch(createUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${providerToken}`,
+          'Content-Type': `multipart/related; boundary=${boundary}`
+        },
+        body: multipartBody
+      });
+      
+      if (!res.ok) throw new Error(`Create HTTP ${res.status}`);
+      const fileInfo = await res.json();
+      googleDriveFileId = fileInfo.id;
+      console.log("Google Drive file created successfully. ID:", googleDriveFileId);
+    }
+    updateSyncStatusIndicator('synced', 'Google Drive Synced');
+  } catch (e) {
+    console.error("Google Drive push failed:", e);
+    updateSyncStatusIndicator('error', 'Drive Sync Failed');
   }
 }
 
@@ -882,9 +1004,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (emailEl) emailEl.textContent = user.email;
         if (avatarEl) avatarEl.src = avatarUrl;
 
-        await loadCloudStateAndMerge(user);
+        // Check if Google OAuth is the login method
+        const isGoogleUser = session.provider_token && (user.app_metadata?.provider === 'google' || user.identities?.some(id => id.provider === 'google'));
+        
+        if (isGoogleUser) {
+          activeSyncProvider = 'google-drive';
+          console.log("Sync provider: Google Drive AppData");
+          await loadGoogleDriveState(session.provider_token);
+        } else {
+          activeSyncProvider = 'supabase';
+          console.log("Sync provider: Supabase Cloud Database");
+          await loadCloudStateAndMerge(user);
+        }
       } else {
         console.log("Auth State Changed: Signed Out");
+        activeSyncProvider = 'local';
+        googleDriveFileId = null;
         if (loggedOutEl) loggedOutEl.style.display = 'flex';
         if (loggedInEl) loggedInEl.style.display = 'none';
         if (syncStatusEl) syncStatusEl.style.display = 'none';
@@ -1297,13 +1432,21 @@ function saveState() {
   localStorage.setItem('pokego_tracker_state', JSON.stringify(state));
   updateDashboardWidgets();
 
-  // If logged in to Supabase, push changes to the database (debounced)
+  // If logged in to Supabase, sync changes (debounced) using active provider
   if (supabase && currentUserSession) {
-    updateSyncStatusIndicator('syncing', 'Syncing changes...');
-    clearTimeout(syncTimeoutId);
-    syncTimeoutId = setTimeout(() => {
-      pushStateToCloud(currentUserSession.user.id, state);
-    }, 1500); // 1.5s debounce
+    if (activeSyncProvider === 'google-drive' && currentUserSession.provider_token) {
+      updateSyncStatusIndicator('syncing', 'Syncing to Drive...');
+      clearTimeout(syncTimeoutId);
+      syncTimeoutId = setTimeout(() => {
+        pushGoogleDriveState(currentUserSession.provider_token, state);
+      }, 1500); // 1.5s debounce
+    } else if (activeSyncProvider === 'supabase') {
+      updateSyncStatusIndicator('syncing', 'Syncing to Cloud...');
+      clearTimeout(syncTimeoutId);
+      syncTimeoutId = setTimeout(() => {
+        pushStateToCloud(currentUserSession.user.id, state);
+      }, 1500); // 1.5s debounce
+    }
   }
 }
 
