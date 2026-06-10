@@ -53,6 +53,13 @@
   padding: 0;
 }
 
+.auth-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
 body {
   background-color: var(--bg-base);
   color: var(--text-main);
@@ -2584,11 +2591,18 @@ input[id*="max"]:checked + .check-btn { background-color: rgba(255, 211, 42, 0.1
   color: var(--text-main);
 }
 
-/* Force Auth Modal Body to layout children in a single column */
+/* Force Auth Modal Body to layout children in a single column and center contents */
 .auth-modal-body {
   display: flex !important;
   flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
   gap: 16px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.auth-modal-body > * {
   width: 100% !important;
   box-sizing: border-box !important;
 }
