@@ -14,12 +14,32 @@
 </head>
 <body>
 
+  <!-- Sidebar Toggle Button & Backdrop Overlay -->
+  <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Navigation">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
   <div class="app-container">
     
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="logo-section">
-        <div class="logo-icon">G</div>
+        <div class="logo-icon">
+          <svg viewBox="0 0 100 100" width="22" height="22" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
+            <!-- Top Half Shell -->
+            <path d="M 15 50 A 35 35 0 0 1 85 50" fill="none" />
+            <!-- Bottom Half Shell -->
+            <path d="M 15 50 A 35 35 0 0 0 85 50" fill="none" opacity="0.6" />
+            <!-- Middle line with center gap -->
+            <path d="M 8 50 L 35 50" />
+            <path d="M 65 50 L 92 50" />
+            <!-- Center Button Ring -->
+            <circle cx="50" cy="50" r="14" stroke-width="6" fill="none" />
+            <!-- Center Core Dot -->
+            <circle cx="50" cy="50" r="5" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
         <div class="logo-title">PokéGO Tracker</div>
       </div>
       
@@ -27,17 +47,20 @@
         <li class="nav-item active" id="nav-pokedex" onclick="switchTab('pokedex')">
           <i class="fa-solid fa-list-ul"></i> Pokedex & Collection
         </li>
-        <li class="nav-item" id="nav-levels" onclick="switchTab('levels')">
-          <i class="fa-solid fa-gauge-high"></i> Level & XP Tracker
-        </li>
         <li class="nav-item" id="nav-medals" onclick="switchTab('medals')">
           <i class="fa-solid fa-medal"></i> Medal Tracker
         </li>
-        <li class="nav-item" id="nav-friends" onclick="switchTab('friends')">
-          <i class="fa-solid fa-user-group"></i> Friends & Lucky
+        <li class="nav-item" id="nav-levels" onclick="switchTab('levels')">
+          <i class="fa-solid fa-gauge-high"></i> Level & XP Tracker
         </li>
         <li class="nav-item" id="nav-storage" onclick="switchTab('storage')">
           <i class="fa-solid fa-box-archive"></i> Storage Manager
+        </li>
+        <li class="nav-item" id="nav-friends" onclick="switchTab('friends')">
+          <i class="fa-solid fa-user-group"></i> Friends & Lucky Friends
+        </li>
+        <li class="nav-item" id="nav-battle" onclick="switchTab('battle')">
+          <i class="fa-solid fa-shield-halved"></i> Battle Parties
         </li>
         <li class="nav-item" id="nav-search-string" onclick="switchTab('search-string')">
           <i class="fa-solid fa-magnifying-glass-plus"></i> Search String Maker
@@ -45,10 +68,12 @@
         <li class="nav-item" id="nav-events" onclick="switchTab('events')">
           <i class="fa-solid fa-calendar-days"></i> Live Events & Raids
         </li>
+              <li class="nav-item" id="nav-admin" onclick="switchTab('admin')" style="display: none; border-top: 1px dashed var(--border-subtle); margin-top: 10px; padding-top: 10px; color: var(--color-secondary);">
+          <i class="fa-solid fa-screwdriver-wrench"></i> Admin Panel
+        </li>
       </nav>
       
       <div class="nav-footer">
-        <p>Trainer Level Cap: 80</p>
         
         <!-- Cloud Sync Status Widget -->
         <div id="cloud-sync-status" class="sync-status-container" style="display: none;">
@@ -67,7 +92,7 @@
           
           <!-- Logged In State -->
           <div id="auth-logged-in" class="auth-state-container" style="display: none;">
-            <div class="user-profile-summary">
+            <div class="user-profile-summary" onclick="openProfileModal()" style="cursor: pointer;" title="Customize Profile Settings">
               <img id="user-avatar" class="user-profile-avatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Avatar">
               <div class="user-profile-details">
                 <span id="user-display-name" class="user-name">Trainer</span>
@@ -87,56 +112,56 @@
       
       <!-- Top 8 Widgets Dashboard -->
       <section class="dashboard-grid">
-        <div class="widget-card">
+        <div class="widget-card" onclick="filterByDashboard('owned')">
           <div class="widget-icon" style="color: var(--color-owned);"><i class="fa-solid fa-circle-dot"></i></div>
           <div class="widget-details">
             <h4>Total Caught</h4>
             <p id="stat-caught-count">0 / 0</p>
           </div>
         </div>
-        <div class="widget-card">
+        <div class="widget-card" onclick="filterByDashboard('shiny')">
           <div class="widget-icon" style="color: var(--color-shiny);"><i class="fa-solid fa-star"></i></div>
           <div class="widget-details">
             <h4>Shinies</h4>
             <p id="stat-shiny-count">0</p>
           </div>
         </div>
-        <div class="widget-card">
+        <div class="widget-card" onclick="filterByDashboard('hundo')">
           <div class="widget-icon" style="color: var(--color-hundo);"><i class="fa-solid fa-ribbon"></i></div>
           <div class="widget-details">
             <h4>Perfect (100%)</h4>
             <p id="stat-hundo-count">0</p>
           </div>
         </div>
-        <div class="widget-card">
-          <div class="widget-icon" style="color: var(--color-owned);"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="widget-card" onclick="filterByDashboard('shadow')">
+          <div class="widget-icon" style="color: var(--color-shadow);"><i class="fa-solid fa-moon"></i></div>
           <div class="widget-details">
             <h4>Shadows</h4>
             <p id="stat-shadow-count">0</p>
           </div>
         </div>
-        <div class="widget-card">
+        <div class="widget-card" onclick="filterByDashboard('mega')">
           <div class="widget-icon" style="color: var(--color-mega);"><i class="fa-solid fa-atom"></i></div>
           <div class="widget-details">
             <h4>Megas Unlocked</h4>
             <p id="stat-mega-count">0</p>
           </div>
         </div>
-        <div class="widget-card">
+        <div class="widget-card" onclick="filterByDashboard('max')">
           <div class="widget-icon" style="color: var(--color-max);"><i class="fa-solid fa-bolt"></i></div>
           <div class="widget-details">
             <h4>Maxes Unlocked</h4>
             <p id="stat-max-count">0</p>
           </div>
         </div>
-        <div class="widget-card">
+        <div class="widget-card" onclick="filterByDashboard('medals')">
           <div class="widget-icon" style="color: var(--color-accent);"><i class="fa-solid fa-trophy"></i></div>
           <div class="widget-details">
             <h4>Platinum Medals</h4>
             <p id="stat-medals-count">0</p>
           </div>
         </div>
-        <div class="widget-card">
+        <div class="widget-card" onclick="filterByDashboard('level')">
           <div class="widget-icon" style="color: var(--color-primary);"><i class="fa-solid fa-chart-line"></i></div>
           <div class="widget-details">
             <h4>Trainer Level</h4>
@@ -204,6 +229,11 @@
               <option value="all">All Release States</option>
               <option value="released">Released in GO</option>
               <option value="unreleased">Unreleased in GO</option>
+              <option value="max">Max Released</option>
+              <option value="mega">Mega Released</option>
+              <option value="primal">Primal Released</option>
+              <option value="shadow">Shadow Released</option>
+              <option value="shiny">Shiny Released</option>
             </select>
             
             <select id="filter-exclusivity" class="filter-select" onchange="applyFilters()">
@@ -241,11 +271,45 @@
               <option value="shadow">Shadow Owned</option>
               <option value="mega">Mega Form Unlocked</option>
               <option value="max">Max Form Unlocked</option>
+              <option value="shiny-hundo">Shiny + Hundo</option>
+              <option value="shiny-shadow">Shiny + Shadow</option>
+              <option value="shadow-hundo">Shadow + Hundo</option>
+              <option value="shiny-shadow-hundo">Shiny + Shadow + Hundo</option>
+              <option value="lucky-hundo">Lucky + Hundo</option>
+              <option value="shiny-lucky">Shiny + Lucky</option>
+              <option value="shiny-lucky-hundo">Shiny + Lucky + Hundo</option>
             </select>
+          </div>
+          <div id="filter-results-count" class="filter-count-display">
+            Showing 1025 of 1025 Pokémon
           </div>
         </div>
 
         <div id="pokedex-grid" class="pokemon-grid">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 3: Medal Tracker -->
+      <div class="tab-panel" id="panel-medals">
+        <div class="section-header">
+          <h2 class="section-title">Medal Tracker</h2>
+          <p class="section-desc">Track your achievements towards Platinum status. Click the hide button on a medal to remove it from view.</p>
+        </div>
+
+        <div class="show-hidden-medals-bar" id="hidden-medals-bar" style="display:none;">
+          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-eye-slash"></i> Some medals have been hidden from tracking.</span>
+          <button class="reset-filters-btn" style="padding:4px 8px; font-size:11px;" onclick="unhideAllMedals()">Show All Medals</button>
+        </div>
+        
+        <div class="pokedex-controls" style="margin-bottom: 24px; padding: 12px; display:flex; flex-wrap:wrap; gap:8px;">
+          <button id="btn-medal-filter-all" class="reset-filters-btn active" style="padding:6px 12px; background: rgba(191, 85, 236, 0.08); border-color: var(--color-primary);" onclick="filterMedals('all')">All Medals</button>
+          <button id="btn-medal-filter-region" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('region')">Region</button>
+          <button id="btn-medal-filter-type" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('type')">Types</button>
+          <button id="btn-medal-filter-gameplay" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('gameplay')">Gameplay</button>
+        </div>
+
+        <div id="medals-container" class="medals-grid">
           <!-- Loaded dynamically -->
         </div>
       </div>
@@ -351,97 +415,6 @@
         </div>
       </div>
 
-      <!-- TAB 3: Medal Tracker -->
-      <div class="tab-panel" id="panel-medals">
-        <div class="section-header">
-          <h2 class="section-title">Medal Tracker</h2>
-          <p class="section-desc">Track your achievements towards Platinum status. Click the hide button on a medal to remove it from view.</p>
-        </div>
-
-        <div class="show-hidden-medals-bar" id="hidden-medals-bar" style="display:none;">
-          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-eye-slash"></i> Some medals have been hidden from tracking.</span>
-          <button class="reset-filters-btn" style="padding:4px 8px; font-size:11px;" onclick="unhideAllMedals()">Show All Medals</button>
-        </div>
-        
-        <div class="pokedex-controls" style="margin-bottom: 24px; padding: 12px; display:flex; flex-wrap:wrap; gap:8px;">
-          <button id="btn-medal-filter-all" class="reset-filters-btn active" style="padding:6px 12px; background: rgba(191, 85, 236, 0.08); border-color: var(--color-primary);" onclick="filterMedals('all')">All Medals</button>
-          <button id="btn-medal-filter-region" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('region')">Region</button>
-          <button id="btn-medal-filter-type" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('type')">Types</button>
-          <button id="btn-medal-filter-gameplay" class="reset-filters-btn" style="padding:6px 12px;" onclick="filterMedals('gameplay')">Gameplay</button>
-        </div>
-
-        <div id="medals-container" class="medals-grid">
-          <!-- Loaded dynamically -->
-        </div>
-      </div>
-
-      <!-- TAB 4: Friends & Lucky Tracker -->
-      <div class="tab-panel" id="panel-friends">
-        <div class="section-header">
-          <h2 class="section-title">Friends & Lucky Friends</h2>
-          <p class="section-desc">Manage trainer lists, check off daily interactions, track countdowns to Ultra/Best friends, and flag Lucky Friends.</p>
-        </div>
-
-        <div class="friends-layout">
-          <div class="friends-grid" id="friends-list-container">
-            <!-- Loaded dynamically -->
-          </div>
-
-          <div class="level-panel" style="align-self: flex-start;">
-            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;">Add Friend</h3>
-            
-            <form id="add-friend-form" onsubmit="addNewFriend(event)" style="display:flex; flex-direction:column; gap:12px;">
-              <div class="form-group">
-                <label for="friend-name-input">Nickname</label>
-                <input type="text" id="friend-name-input" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label for="friend-code-input">Trainer Code (Optional)</label>
-                <input type="text" id="friend-code-input" class="form-input" placeholder="e.g. 1234 5678 9012">
-              </div>
-              <div class="form-group">
-                <label for="friend-level-select">Friendship Status</label>
-                <select id="friend-level-select" class="filter-select">
-                  <option value="good">Good Friend</option>
-                  <option value="great">Great Friend</option>
-                  <option value="ultra">Ultra Friend</option>
-                  <option value="best">Best Friend</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="friend-days-input">Days to Next Tier</label>
-                <input type="number" id="friend-days-input" class="form-input" value="7" min="0" max="90">
-              </div>
-              <div class="form-group">
-                <label for="friend-vivillon-select">Vivillon Region / Gift Pattern</label>
-                <select id="friend-vivillon-select" class="filter-select">
-                  <option value="none">Unknown / None</option>
-                  <option value="Archipelago">Archipelago 🦋</option>
-                  <option value="Continental">Continental 🦋</option>
-                  <option value="Elegant">Elegant 🦋</option>
-                  <option value="Garden">Garden 🦋</option>
-                  <option value="High Plains">High Plains 🦋</option>
-                  <option value="Icy Snow">Icy Snow 🦋</option>
-                  <option value="Jungle">Jungle 🦋</option>
-                  <option value="Marine">Marine 🦋</option>
-                  <option value="Meadow">Meadow 🦋</option>
-                  <option value="Modern">Modern 🦋</option>
-                  <option value="Monsoon">Monsoon 🦋</option>
-                  <option value="Ocean">Ocean 🦋</option>
-                  <option value="Polar">Polar 🦋</option>
-                  <option value="River">River 🦋</option>
-                  <option value="Sandstorm">Sandstorm 🦋</option>
-                  <option value="Savanna">Savanna 🦋</option>
-                  <option value="Sun">Sun 🦋</option>
-                  <option value="Tundra">Tundra 🦋</option>
-                </select>
-              </div>
-              <button type="submit" class="btn-primary" id="btn-add-friend"><i class="fa-solid fa-user-plus"></i> Add Friend</button>
-            </form>
-          </div>
-        </div>
-      </div>
-
       <!-- TAB 5: Storage Manager -->
       <div class="tab-panel" id="panel-storage">
         <div class="section-header">
@@ -449,7 +422,8 @@
           <p class="section-desc">Manage both your Pokemon storage limits and Item Bag inventory. Get automated recommendations to optimize your bag space.</p>
         </div>
 
-        <div class="storage-layout">
+        <div id="storage-manager-content">
+          <div class="storage-layout">
           <!-- Column 1: Item Bag Storage (70% width on desktop) -->
           <div class="storage-col-items">
             <!-- Item Bag Inventory Gauge & Inputs -->
@@ -520,7 +494,238 @@
         </div>
       </div>
 
-      <!-- TAB 6: Search String Maker -->
+      <!-- Storage Manager Lock Overlay -->
+      <div id="storage-lock-overlay" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; background: rgba(0,0,0,0.15); border: 1px dashed var(--border-subtle); border-radius: 12px; margin: 20px 0; width: 100%;">
+        <i class="fa-solid fa-lock" style="font-size: 36px; color: var(--color-accent); margin-bottom: 16px;"></i>
+        <h4 style="font-family: var(--font-title); margin-bottom: 8px; font-size: 16px; color: var(--text-main);">Storage Manager Locked</h4>
+        <p style="font-size: 13px; color: var(--text-muted); max-width: 400px; line-height: 1.5; margin: 0 0 16px 0;">
+          Storage Manager requires signing in. Sign in to manage your Pokémon storage limits, item inventory, and get automated cleanup recommendations.
+        </p>
+        <button class="btn-primary" onclick="openAuthModal()" style="padding: 8px 16px; font-size: 12px; max-width: 200px;">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In / Sync
+        </button>
+      </div>
+
+      <!-- TAB 4: Friends & Lucky Tracker -->
+      <div class="tab-panel" id="panel-friends">
+        <div class="section-header">
+          <h2 class="section-title">Friends & Lucky Friends</h2>
+          <p class="section-desc">Manage trainer lists, check off daily interactions, track countdowns to Ultra/Best friends, and flag Lucky Friends.</p>
+        </div>
+
+        <div class="friends-layout">
+          <div class="friends-grid" id="friends-list-container">
+            <!-- Loaded dynamically -->
+          </div>
+
+          <div class="level-panel" style="align-self: flex-start;">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;">Add Friend</h3>
+            
+            <form id="add-friend-form" onsubmit="addNewFriend(event)" style="display:flex; flex-direction:column; gap:12px;">
+              <div class="form-group">
+                <label for="friend-name-input">Nickname</label>
+                <input type="text" id="friend-name-input" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="friend-code-input">Trainer Code (Optional)</label>
+                <input type="text" id="friend-code-input" class="form-input" placeholder="e.g. 1234 5678 9012">
+                <div id="friend-code-error" style="color: var(--color-danger); font-size: 11px; margin-top: 4px; display: none;"></div>
+              </div>
+              <div class="form-group">
+                <label for="friend-level-select">Friendship Status</label>
+                <select id="friend-level-select" class="filter-select">
+                  <option value="good">Good Friend</option>
+                  <option value="great">Great Friend</option>
+                  <option value="ultra">Ultra Friend</option>
+                  <option value="best">Best Friend</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="friend-days-input">Days to Next Tier</label>
+                <input type="number" id="friend-days-input" class="form-input" value="7" min="0" max="90">
+              </div>
+              <div class="form-group">
+                <label for="friend-vivillon-select">Vivillon Region / Gift Pattern</label>
+                <select id="friend-vivillon-select" class="filter-select">
+                  <option value="none">Unknown / None</option>
+                  <option value="Archipelago">Archipelago 🦋</option>
+                  <option value="Continental">Continental 🦋</option>
+                  <option value="Elegant">Elegant 🦋</option>
+                  <option value="Garden">Garden 🦋</option>
+                  <option value="High Plains">High Plains 🦋</option>
+                  <option value="Icy Snow">Icy Snow 🦋</option>
+                  <option value="Jungle">Jungle 🦋</option>
+                  <option value="Marine">Marine 🦋</option>
+                  <option value="Meadow">Meadow 🦋</option>
+                  <option value="Modern">Modern 🦋</option>
+                  <option value="Monsoon">Monsoon 🦋</option>
+                  <option value="Ocean">Ocean 🦋</option>
+                  <option value="Polar">Polar 🦋</option>
+                  <option value="River">River 🦋</option>
+                  <option value="Sandstorm">Sandstorm 🦋</option>
+                  <option value="Savanna">Savanna 🦋</option>
+                  <option value="Sun">Sun 🦋</option>
+                  <option value="Tundra">Tundra 🦋</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary" id="btn-add-friend"><i class="fa-solid fa-user-plus"></i> Add Friend</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 8: Battle Parties -->
+      <div class="tab-panel" id="panel-battle">
+        <div class="section-header">
+          <h2 class="section-title">Battle Parties</h2>
+          <p class="section-desc">Create and manage your custom battle teams for Great/Ultra/Master Leagues, Team GO Rocket encounters, and Raids.</p>
+        </div>
+        
+        <div id="battle-parties-content">
+          <div class="battle-parties-creators-layout" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 24px; align-items: stretch;">
+          <!-- PVP & Rocket Creator (3 Slots) -->
+          <div class="level-panel" style="margin-bottom: 0; background: linear-gradient(135deg, rgba(22, 25, 38, 0.7), rgba(22, 25, 38, 0.4)); border: 1px solid rgba(191, 85, 236, 0.15); box-shadow: var(--shadow-glow-purple); display: flex; flex-direction: column; height: 100%;">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 16px; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-circle-plus"></i> Create PvP & Rocket Party (3 Slots)
+            </h3>
+            
+            <form id="battle-party-form" onsubmit="createBattleParty(event)" style="display:flex; flex-direction:column; gap:20px; flex-grow: 1; justify-content: space-between;">
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:16px;">
+                <div class="form-group">
+                  <label for="party-name" style="font-weight:700; font-size:12px; margin-bottom:6px; display:block; color: var(--text-muted);">Party Name</label>
+                  <input type="text" id="party-name" class="form-input" placeholder="e.g. Master League Core Meta" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.08);" required>
+                </div>
+                <div class="form-group">
+                  <label for="party-type" style="font-weight:700; font-size:12px; margin-bottom:6px; display:block; color: var(--text-muted);">Category / League</label>
+                  <select id="party-type" class="form-input" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.08);">
+                    <option value="Great League">Great League (CP <= 1500)</option>
+                    <option value="Ultra League">Ultra League (CP <= 2500)</option>
+                    <option value="Master League">Master League (No CP limit)</option>
+                    <option value="Team GO Rocket">Team GO Rocket & Giovanni</option>
+                    <option value="Max Battles">Max Battles (3 Slots)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap: 10px;">
+                  <span style="font-weight:700; font-size:12px; color: var(--text-muted); margin: 0;">Select Team Pokémon (3 Slots)</span>
+                  <input type="text" id="pvp-party-search" placeholder="🔍 Search..." class="form-input" style="width: 140px; height: 26px; padding: 2px 8px; font-size: 11px; background: rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.06); margin: 0;" oninput="filterPvPSelectOptions(this.value)">
+                </div>
+                <div class="party-slots-grid">
+                  <!-- Slot 1 -->
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--color-primary); display:flex; align-items:center; gap:4px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:var(--color-primary); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:900;">1</span> Lead
+                    </label>
+                    <select id="party-slot-1" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                  <!-- Slot 2 -->
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--color-secondary); display:flex; align-items:center; gap:4px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:var(--color-secondary); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:900;">2</span> Switch
+                    </label>
+                    <select id="party-slot-2" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                  <!-- Slot 3 -->
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--color-accent); display:flex; align-items:center; gap:4px;">
+                      <span style="width:14px; height:14px; border-radius:50%; background:var(--color-accent); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:900;">3</span> Closer
+                    </label>
+                    <select id="party-slot-3" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="align-self:flex-start; padding: 10px 20px; font-family: var(--font-title); font-size: 12px; font-weight: 700; text-transform: uppercase; border-radius: 8px; box-shadow: var(--shadow-glow-purple); transition: var(--transition-bounce); margin-top: auto;">
+                <i class="fa-solid fa-floppy-disk"></i> Save PvP Party
+              </button>
+            </form>
+          </div>
+
+          <!-- Raid & Gym Creator (6 Slots) -->
+          <div class="level-panel" style="margin-bottom: 0; background: linear-gradient(135deg, rgba(22, 25, 38, 0.7), rgba(22, 25, 38, 0.4)); border: 1px solid rgba(191, 85, 236, 0.15); box-shadow: var(--shadow-glow-purple); display: flex; flex-direction: column; height: 100%;">
+            <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 16px; color: var(--color-secondary); display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-circle-plus"></i> Create Raid & Gym Party (6 Slots)
+            </h3>
+            
+            <form id="raid-party-form" onsubmit="createRaidBattleParty(event)" style="display:flex; flex-direction:column; gap:20px; flex-grow: 1; justify-content: space-between;">
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:16px;">
+                <div class="form-group">
+                  <label for="raid-party-name" style="font-weight:700; font-size:12px; margin-bottom:6px; display:block; color: var(--text-muted);">Party Name</label>
+                  <input type="text" id="raid-party-name" class="form-input" placeholder="e.g. Kyogre Counter Team" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.08);" required>
+                </div>
+                <div class="form-group">
+                  <label for="raid-party-boss" style="font-weight:700; font-size:12px; margin-bottom:6px; display:block; color: var(--text-muted);">Target Raid Boss (Optional)</label>
+                  <select id="raid-party-boss" class="form-input" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.08);" onchange="populateRaidPartySelectors()">
+                    <option value="">None (Gym / General Raid)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap: 10px;">
+                  <span style="font-weight:700; font-size:12px; color: var(--text-muted); margin: 0;">Select Team Pokémon (6 Slots)</span>
+                  <input type="text" id="raid-party-search" placeholder="🔍 Search..." class="form-input" style="width: 140px; height: 26px; padding: 2px 8px; font-size: 11px; background: rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.06); margin: 0;" oninput="filterRaidSelectOptions(this.value)">
+                </div>
+                <div class="party-slots-grid">
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--color-primary);">Slot 1</label>
+                    <select id="raid-slot-1" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--color-secondary);">Slot 2</label>
+                    <select id="raid-slot-2" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--color-accent);">Slot 3</label>
+                    <select id="raid-slot-3" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--text-muted);">Slot 4</label>
+                    <select id="raid-slot-4" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--text-muted);">Slot 5</label>
+                    <select id="raid-slot-5" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                  <div class="form-group" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight:800; font-size:10px; color: var(--text-muted);">Slot 6</label>
+                    <select id="raid-slot-6" class="form-input" style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.05); font-size: 11px; padding: 6px 10px;" required></select>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="align-self:flex-start; padding: 10px 20px; font-family: var(--font-title); font-size: 12px; font-weight: 700; text-transform: uppercase; border-radius: 8px; box-shadow: var(--shadow-glow-purple); background: linear-gradient(135deg, var(--color-secondary), var(--color-accent)); transition: var(--transition-bounce); margin-top: auto;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Raid Party
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div class="level-panel" style="background: var(--bg-sidebar); border-color: var(--border-subtle);">
+          <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 20px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-people-group" style="color: var(--color-accent);"></i> Saved Battle Parties
+          </h3>
+          <div id="battle-parties-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
+            <!-- Rendered list of battle parties -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Battle Parties Lock Overlay -->
+      <div id="battle-lock-overlay" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; background: rgba(0,0,0,0.15); border: 1px dashed var(--border-subtle); border-radius: 12px; margin: 20px 0; width: 100%;">
+        <i class="fa-solid fa-lock" style="font-size: 36px; color: var(--color-accent); margin-bottom: 16px;"></i>
+        <h4 style="font-family: var(--font-title); margin-bottom: 8px; font-size: 16px; color: var(--text-main);">Battle Parties Locked</h4>
+        <p style="font-size: 13px; color: var(--text-muted); max-width: 400px; line-height: 1.5; margin: 0 0 16px 0;">
+          Battle Parties require signing in. Sign in to create and manage custom battle teams for PvP Leagues, Team GO Rocket, and Gym/Raid encounters.
+        </p>
+        <button class="btn-primary" onclick="openAuthModal()" style="padding: 8px 16px; font-size: 12px; max-width: 200px;">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In / Sync
+        </button>
+      </div>
+
+  <!-- TAB 6: Search String Maker -->
       <div class="tab-panel" id="panel-search-string">
         <div class="section-header">
           <h2 class="section-title">Search String Maker</h2>
@@ -548,9 +753,14 @@
             
             <div class="code-output-box">
               <pre id="search-string-output">4*</pre>
-              <button id="btn-copy-string" class="copy-btn" onclick="copySearchString()" title="Copy to clipboard">
-                <i class="fa-regular fa-copy"></i>
-              </button>
+              <div class="code-output-actions" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; gap: 8px;">
+                <button id="btn-clear-string" class="copy-btn" style="position: static; transform: none;" onclick="clearSearchStringFilters()" title="Clear filters">
+                  <i class="fa-solid fa-eraser"></i>
+                </button>
+                <button id="btn-copy-string" class="copy-btn" style="position: static; transform: none;" onclick="copySearchString()" title="Copy to clipboard">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -676,7 +886,7 @@
         </div>
         
         <div class="events-layout-grid">
-          <!-- Column 1: Current Events (50% width on desktop) -->
+          <!-- Column 1: Current Events -->
           <div class="events-col-1">
             <div class="level-panel">
               <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-fire" style="color:var(--color-secondary); margin-right: 8px;"></i>What's Happening This Week</h3>
@@ -684,17 +894,26 @@
               <div id="events-list" class="events-cards-grid" style="display:flex; flex-direction:column; gap:12px;"></div>
             </div>
           </div>
+
+          <!-- Column 3: Regional & City-Specific Events -->
+          <div class="events-col-regional" id="events-panel-regional">
+            <div class="level-panel">
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-earth-americas" style="color:var(--color-accent); margin-right: 8px;"></i>Regional & City Events</h3>
+              <div id="regional-loading" style="text-align:center; padding:30px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading regional events...</div>
+              <div id="regional-events-list" class="events-cards-grid" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+          </div>
           
-          <!-- Column 2: 5-Star & 3-Star Battle (25% width on desktop) -->
+          <!-- Column 2: 5-Star & 3-Star Raids -->
           <div class="events-col-2">
             <div class="level-panel">
-              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-skull-crossbones" style="color:var(--color-secondary); margin-right: 8px;"></i>5-Star & 3-Star Raids</h3>
+              <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-circle-chevron-up" style="color:var(--color-secondary); margin-right: 8px;"></i>5-Star & 3-Star Raids</h3>
               <div id="raids-col2-loading" style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading raids...</div>
               <div id="raids-col2-container" style="display:flex; flex-direction:column; gap:12px;"></div>
             </div>
           </div>
 
-          <!-- Column 3: Mega Raids & Max Battles (25% width on desktop) -->
+          <!-- Column 4: Mega Raids & Max Battles -->
           <div class="events-col-3">
             <div class="level-panel">
               <h3 style="font-family: var(--font-title); font-size: 16px; margin-bottom: 14px;"><i class="fa-solid fa-bolt" style="color:var(--color-accent); margin-right: 8px;"></i>Mega & Max Battles</h3>
@@ -705,10 +924,40 @@
         </div>
       </div>
 
-    </main>
+      <!-- TAB 9: Admin Panel -->
+      <div class="tab-panel" id="panel-admin">
+        <div class="section-header">
+          <h2 class="section-title" style="color: var(--color-secondary);"><i class="fa-solid fa-screwdriver-wrench"></i> Admin Control Panel</h2>
+          <p class="section-desc">Manage Pokémon release status, edit details, custom forms, and run live scrapers to sync data with reference wikis.</p>
+        </div>
+        
+        <div class="admin-layout" style="display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start;">
+          <!-- Left Column: Search & Select -->
+          <div class="level-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px; height: 70vh; overflow-y: hidden; background: var(--bg-sidebar); border-color: var(--border-subtle);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-family: var(--font-title); font-size: 14px; margin: 0; color: var(--text-main);">Select Pokémon</h3>
+              <button id="admin-toggle-released" class="btn-primary" style="padding: 4px 8px; font-size: 10px; height: auto; margin: 0;">Show All</button>
+            </div>
+            <input type="text" id="admin-search" class="form-input" placeholder="Search by name/ID..." style="padding: 8px 10px; font-size: 12px; background: rgba(0,0,0,0.2);">
+            <div id="admin-poke-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+          
+          <!-- Right Column: Edit Panel -->
+          <div class="level-panel" id="admin-edit-panel" style="padding: 24px; min-height: 70vh; display: flex; flex-direction: column; gap: 20px; background: var(--bg-sidebar); border-color: var(--border-subtle);">
+            <div style="text-align: center; padding: 60px 20px; color: var(--text-muted); margin: auto;">
+              <i class="fa-solid fa-screwdriver-wrench" style="font-size: 40px; color: var(--color-primary-glow); margin-bottom: 16px;"></i>
+              <p style="font-family: var(--font-title); font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">No Pokémon Selected</p>
+              <p style="font-size: 12px;">Select a Pokémon from the left panel to edit its details and run the live Fandom Wiki scraper.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+</main>
   </div>
 
-  <!-- POKEMON DETAIL MODAL -->
+<!-- POKEMON DETAIL MODAL -->
   <div id="detail-modal" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -729,16 +978,35 @@
       </div>
       
       <div class="modal-body">
-        
-        <!-- Info dynamic description section spans full width -->
-        <div class="detail-section" id="modal-desc-section">
-          <!-- Dynamic card description text -->
-        </div>
+        <div id="modal-sticky-header" class="modal-sticky-header-row"></div>
 
         <div class="modal-col-left">
           
+          <!-- Sprite Section with Carousel -->
+          <div class="detail-section" id="modal-sprite-section">
+            <div class="modal-sprite-column" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+              <div class="carousel-outer-wrapper">
+                <button class="carousel-nav-btn prev" onclick="changeCarouselSlide(-1)">&lsaquo;</button>
+                <div class="carousel-container" id="modal-carousel-container">
+                  <div class="carousel-track" id="modal-carousel-track"></div>
+                  <div class="carousel-badge" id="modal-carousel-badge">Normal</div>
+                </div>
+                <button class="carousel-nav-btn next" onclick="changeCarouselSlide(1)">&rsaquo;</button>
+              </div>
+              <div class="carousel-dots" id="modal-carousel-dots"></div>
+              <button id="modal-view-backgrounds-btn" class="view-bg-btn" style="display: none; padding: 6px 12px; font-size: 11px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); border: none; border-radius: 6px; cursor: pointer; box-shadow: var(--shadow-sm); width: 140px; text-align: center; gap: 4px; align-items: center; justify-content: center; transition: all 0.2s;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Backgrounds
+              </button>
+            </div>
+          </div>
+
+          <!-- Info dynamic description section inside left column -->
+          <div class="detail-section" id="modal-desc-section">
+            <!-- Dynamic card description text -->
+          </div>
+          
           <!-- Combat Metrics -->
-          <div class="detail-section">
+          <div class="detail-section" id="modal-combat-metrics-section">
             <h3>Combat Metrics</h3>
             <div class="stats-grid" style="margin-bottom:10px;">
               <div class="stat-item">
@@ -784,7 +1052,7 @@
           </div>
 
           <!-- Type Effectiveness in Pokémon GO -->
-          <div class="detail-section">
+          <div class="detail-section" id="modal-effectiveness-section">
             <h3>Type Effectiveness in Pokémon GO</h3>
             <div style="display:flex; flex-direction:column; gap:8px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px;">
               <div>
@@ -803,7 +1071,7 @@
           </div>
 
           <!-- Recommended Movesets -->
-          <div class="detail-section">
+          <div class="detail-section" id="modal-moves-section">
             <h3>Recommended Movesets</h3>
             <div class="moves-list" id="modal-moves-container">
               <!-- Dynamic moves with exclusive tags -->
@@ -830,7 +1098,7 @@
           </div>
 
           <!-- Storage & Collection Optimization Tip -->
-          <div class="detail-section" style="margin-bottom:20px;">
+          <div class="detail-section" id="modal-optimize-section" style="margin-bottom:20px;">
             <h3>Storage & Collection Optimization Tip</h3>
             <div id="modal-opt-tip" class="tip-box">
               Keep only one of this species since it has low battle utility. Prioritize Shiny or High IV.
@@ -841,7 +1109,7 @@
         <div class="modal-col-right">
 
           <!-- 100% IV (Hundo) CP Reference Chart -->
-          <div class="detail-section">
+          <div class="detail-section" id="modal-hundo-section">
             <h3>100% IV (Hundo) CP Reference Chart</h3>
             <p style="font-size:10px; color:var(--text-muted); margin-bottom:8px;">Exact Hundo CP values for different encounter levels computed from base stats.</p>
             <table class="cp-table">
@@ -882,6 +1150,39 @@
             </div>
           </div>
 
+          <!-- Pokémon GO Availability & Encounters -->
+          <div class="detail-section" id="modal-availability-section">
+            <h3>Pokémon GO Availability & Encounters</h3>
+            <div class="info-alert" style="background: rgba(245, 176, 65, 0.02); border: 1px solid rgba(245, 176, 65, 0.15); display: flex; gap: 10px; padding: 12px; border-radius: 8px;">
+              <i class="fa-solid fa-map-location-dot" style="color: var(--color-accent); font-size: 16px; margin-top: 2px;"></i>
+              <div>
+                <strong id="modal-availability-method" style="color: var(--color-accent); font-family: var(--font-title); font-size: 13px;">Wild Spawn</strong>
+                <div id="modal-availability-details" style="font-size:11px; margin-top:3px; color: var(--text-muted); line-height: 1.4;">Commonly available in the wild as a standard spawn.</div>
+                <div id="modal-availability-sources" style="font-size: 9px; margin-top: 6px; color: var(--text-dim);">
+                  Sources cited: Leek Duck, Pokémon GO Wiki, PokePVP
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Caught Forms Checklist -->
+          <div class="detail-section" id="modal-forms-section" style="display:none;">
+            <h3>Caught Forms Checklist</h3>
+            <p style="font-size:10px; color:var(--text-muted); margin-bottom:8px;">Check the specific forms you have captured for this species.</p>
+            <div id="modal-forms-checklist" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; max-height: 150px; overflow-y: auto;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Caught Backgrounds Checklist -->
+          <div class="detail-section" id="modal-backgrounds-section" style="display:none;">
+            <h3>Caught Backgrounds Checklist</h3>
+            <p style="font-size:10px; color:var(--text-muted); margin-bottom:8px;">Check the location or special event backgrounds you have captured for this species.</p>
+            <div id="modal-backgrounds-checklist" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; max-height: 150px; overflow-y: auto;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
           <!-- Did You Know? -->
           <div class="detail-section" id="modal-fun-fact-section" style="margin-bottom:0;">
             <h3>Did You Know?</h3>
@@ -908,11 +1209,16 @@
         <form id="email-auth-form" onsubmit="handleEmailAuth(event)" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; width: 100%; box-sizing: border-box;">
           <div class="form-group">
             <label for="auth-email">Email Address</label>
-            <input type="email" id="auth-email" class="form-input" required placeholder="trainer@pokedex.com">
+            <input type="text" id="auth-email" class="form-input" required placeholder="trainer@pokedex.com or admin">
           </div>
           <div class="form-group" id="auth-password-group">
             <label for="auth-password">Password</label>
-            <input type="password" id="auth-password" class="form-input" required placeholder="••••••••" minlength="6">
+            <div style="position: relative; width: 100%;">
+              <input type="password" id="auth-password" class="form-input" required placeholder="••••••••" minlength="6" style="padding-right: 40px; width: 100%; box-sizing: border-box;">
+              <button type="button" id="toggle-auth-password-btn" onclick="toggleAuthPasswordVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 10;">
+                <i class="fa-solid fa-eye" id="auth-password-eye-icon"></i>
+              </button>
+            </div>
           </div>
 
           <div style="display: flex; justify-content: center; align-items: center; margin-top: 4px;">
@@ -923,6 +1229,9 @@
 
           <button type="submit" class="btn-primary" id="btn-auth-submit" style="width: 100%; margin-top: 6px;">
             <i class="fa-solid fa-right-to-bracket"></i> <span id="auth-submit-text">Sign In</span>
+          </button>
+          <button type="button" class="btn-secondary" onclick="signInAsGuest('guest@tracker.com')" style="width: 100%; margin-top: 10px;">
+            <i class="fa-solid fa-user-ninja"></i> Sign In as Guest (Demo Mode)
           </button>
         </form>
 
@@ -960,6 +1269,118 @@
         <div id="auth-success-msg" class="auth-success-container" style="display: none; margin-bottom: 12px; width: 100%; box-sizing: border-box;">
           <i class="fa-solid fa-circle-check"></i> Check your email for verification link.
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINER PROFILE MODAL -->
+  <div id="profile-modal" class="modal-overlay" onclick="closeProfileModal(event)">
+    <div class="modal-card profile-modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <h2 style="font-family: var(--font-title); font-size: 20px; font-weight: 700; margin: 0;">Trainer Profile Settings</h2>
+        <button class="close-modal-btn" onclick="closeProfileModal(null)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="profile-settings-form" onsubmit="saveTrainerProfile(event)" style="display: flex; flex-direction: column; gap: 16px;">
+          
+          <!-- Avatar Preview and Selection Row -->
+          <div class="profile-avatar-section" style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <div class="profile-avatar-circle" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--color-primary); overflow: hidden; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+              <img id="profile-avatar-preview" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Avatar Preview" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            
+            <div style="text-align: center;">
+              <span style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Trainer Account ID</span>
+              <span id="profile-user-id" style="font-family: monospace; font-size: 11px; color: var(--text-muted); word-break: break-all;">guest-user-123</span>
+            </div>
+
+          </div>
+
+          <div class="form-group">
+            <label for="profile-username" style="font-weight:700; font-size:12px;">Trainer Username</label>
+            <input type="text" id="profile-username" class="form-input" placeholder="e.g. AshKetchum">
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight:700; font-size:12px; margin-bottom:8px; display:block;">Select Faction / Team</label>
+            <div class="team-selection-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              
+              <label class="team-radio-card team-mystic" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; padding:12px; border:1px solid var(--border-subtle); border-radius:8px; background:rgba(52, 152, 219, 0.02); text-align:center; transition:all 0.2s;">
+                <input type="radio" name="profile-team" value="Mystic" style="display:none;">
+                <i class="fa-solid fa-snowflake" style="font-size:24px; color:#3498db; margin-bottom:6px;"></i>
+                <span style="font-size:11px; font-weight:700; color:#3498db;">Mystic</span>
+              </label>
+
+              <label class="team-radio-card team-instinct" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; padding:12px; border:1px solid var(--border-subtle); border-radius:8px; background:rgba(241, 196, 15, 0.02); text-align:center; transition:all 0.2s;">
+                <input type="radio" name="profile-team" value="Instinct" style="display:none;">
+                <i class="fa-solid fa-bolt" style="font-size:24px; color:#f1c40f; margin-bottom:6px;"></i>
+                <span style="font-size:11px; font-weight:700; color:#f1c40f;">Instinct</span>
+              </label>
+
+              <label class="team-radio-card team-valor" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; padding:12px; border:1px solid var(--border-subtle); border-radius:8px; background:rgba(231, 76, 60, 0.02); text-align:center; transition:all 0.2s;">
+                <input type="radio" name="profile-team" value="Valor" style="display:none;">
+                <i class="fa-solid fa-fire-flame-curved" style="font-size:24px; color:#e74c3c; margin-bottom:6px;"></i>
+                <span style="font-size:11px; font-weight:700; color:#e74c3c;">Valor</span>
+              </label>
+
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="profile-birthday" style="font-weight:700; font-size:12px;">Birthday</label>
+            <input type="date" id="profile-birthday" class="form-input" style="color:var(--text-main); color-scheme:dark;">
+            <div id="profile-birthday-error" style="color: var(--color-danger); font-size: 11px; margin-top: 4px; display: none;">Only users above age 13 are allowed to create a profile.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="profile-avatar-url" style="font-weight:700; font-size:12px;">Avatar Image URL</label>
+            <input type="url" id="profile-avatar-url" class="form-input" placeholder="https://example.com/avatar.jpg">
+          </div>
+
+          <div class="form-group">
+            <label for="profile-trainer-code" style="font-weight:700; font-size:12px;">Trainer Friend Code</label>
+            <input type="text" id="profile-trainer-code" class="form-input" placeholder="XXXX XXXX XXXX">
+            <div id="profile-code-error" style="color: var(--color-danger); font-size: 11px; margin-top: 4px; display: none;">Trainer Code must be exactly 12 digits.</div>
+          </div>
+
+          <!-- Password Reset Subform for standard email auth users -->
+          <div id="profile-password-section" style="border-top: 1px solid var(--border-subtle); padding-top: 16px; margin-top: 8px; display: none;">
+            <h3 style="font-family: var(--font-title); font-size: 14px; margin-bottom: 12px; color: var(--color-primary);">Change Password</h3>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="profile-new-password" style="font-weight:700; font-size:12px;">New Password</label>
+              <input type="password" id="profile-new-password" class="form-input" placeholder="••••••••" minlength="6">
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="profile-confirm-password" style="font-weight:700; font-size:12px;">Confirm New Password</label>
+              <input type="password" id="profile-confirm-password" class="form-input" placeholder="••••••••" minlength="6">
+            </div>
+            <div id="profile-password-error" style="color: var(--color-danger); font-size: 11px; margin-bottom: 8px; display: none;"></div>
+            <button type="button" class="btn-secondary" onclick="updateTrainerPassword()" style="width: 100%;">Update Password</button>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save Profile
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKGROUNDS SELECTION POPUP -->
+  <div id="backgrounds-popup" class="modal-overlay" onclick="closeBackgroundsPopup(event)" style="z-index: 10005;">
+    <div class="modal-card" onclick="event.stopPropagation()" style="max-width: 600px; width: 100%; border: 1px solid rgba(191, 85, 236, 0.2); box-shadow: 0 0 30px rgba(191, 85, 236, 0.15);">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <h2 id="bg-popup-title" style="font-family: var(--font-title); font-size: 20px; font-weight: 700; margin: 0; color: var(--color-primary);">Released Backgrounds</h2>
+        <button class="close-modal-btn" onclick="closeBackgroundsPopup(null)">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px 24px; max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-family: var(--font-title); font-size: 16px; font-weight: 700; color: var(--color-secondary); border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">Released Backgrounds</div>
+        <div id="bg-popup-grid" class="bg-popup-grid">
+          <!-- Styled background cards generated dynamically -->
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0; padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+          <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 6px;"></i>Click on a location card background to mark it caught. They will stay in sync with the checklists.
+        </p>
       </div>
     </div>
   </div>
