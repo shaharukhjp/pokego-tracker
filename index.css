@@ -539,7 +539,7 @@ body {
 .card-body-split {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
 }
 
@@ -3039,8 +3039,9 @@ input[id*="favorite"]:checked + .check-btn { background-color: rgba(0, 240, 255,
 }
 
 /* Modal Open Body Lock */
-body.modal-open {
+html.modal-open, body.modal-open {
   overflow: hidden !important;
+  height: 100% !important;
 }
 
 /* Backgrounds Popup Layout */

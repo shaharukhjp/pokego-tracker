@@ -257,6 +257,7 @@ function resolveUserAvatar(profile, session) {
 
 function lockBodyScroll() {
   document.body.classList.add('modal-open');
+  document.documentElement.classList.add('modal-open');
 }
 
 function unlockBodyScroll() {
@@ -267,6 +268,7 @@ function unlockBodyScroll() {
   
   if (!detailOpen && !authOpen && !profileOpen && !bgOpen) {
     document.body.classList.remove('modal-open');
+    document.documentElement.classList.remove('modal-open');
   }
 }
 
@@ -6268,7 +6270,7 @@ async function loadGlobalDatabaseOverrides() {
     const { data, error } = await supabaseClient
       .from('user_states')
       .select('state')
-      .eq('user_id', 'global_pokedex_overrides')
+      .eq('user_id', '00000000-0000-0000-0000-000000000000')
       .maybeSingle();
       
     if (error) throw error;
@@ -6565,7 +6567,7 @@ async function saveAdminOverride(event, id) {
       const { error } = await supabaseClient
         .from('user_states')
         .upsert({
-          user_id: 'global_pokedex_overrides',
+          user_id: '00000000-0000-0000-0000-000000000000',
           state: { pokedexOverrides: window.globalPokedexOverrides },
           updated_at: new Date().toISOString()
         });
